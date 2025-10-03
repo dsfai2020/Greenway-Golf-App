@@ -58,6 +58,15 @@ input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #dd
 @media (max-width:900px){
   .container{padding:16px}
   .menu-button{display:block}
+  /* make the menu toggle more prominent on mobile */
+  .menu-button{
+    background:var(--green);
+    color:#fff;
+    border-radius:10px;
+    padding:8px 10px;
+    box-shadow:0 8px 20px rgba(11,132,87,0.18);
+    border:1px solid rgba(0,0,0,0.06);
+  }
   .nav{position:absolute;top:64px;right:12px;background:rgba(255,255,255,0.95);flex-direction:column;padding:12px;border-radius:8px;display:none;box-shadow:0 6px 18px rgba(0,0,0,0.12)}
   .nav.open{display:flex}
 }
@@ -79,6 +88,49 @@ input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #dd
   .small{padding:10px 12px}
   .swing{gap:8px}
   .swing .notes input{width:100%}
+}
+
+/* Further condense the swing UI in portrait so it uses less vertical space */
+@media (min-width:360px) and (max-width:430px) and (orientation:portrait){
+  .swing{gap:6px;padding:6px;border-radius:8px}
+  /* hide the swing index to save space */
+  .swing-index{display:none}
+  /* show notes by default on portrait and make the input controls more compact and horizontal */
+  .swing .notes{display:block}
+  /* arrange club / terrain / feel horizontally to save vertical space */
+  .swing{flex-direction:row;align-items:center;flex-wrap:wrap}
+  .swing label{font-size:13px;margin:0 6px}
+  .swing select, .swing input{padding:8px;font-size:16px}
+  /* layout top row: three compact controls */
+  .swing label{flex:0 0 30%;min-width:90px}
+  /* place notes + remove button on a second row beneath the controls */
+  .swing .notes{order:2;flex:1 1 100%;margin-top:8px}
+  .swing .notes input{width:100%}
+  /* put remove button under notes as its own full row */
+  .swing .small.danger{order:3;flex:0 0 100%;align-self:flex-start;margin-left:0;margin-top:8px}
+  /* ensure icons are visible and sized */
+  .label-icon{display:inline-block;font-size:18px;line-height:1}
+  /* prevent iOS from auto-zooming when inputs are focused by ensuring 16px font-size */
+  .swing input:focus, .swing select:focus{font-size:16px}
+  /* compact mobile card elements */
+  .mobile-hole{padding:10px}
+  .mobile-head{gap:6px}
+  .mobile-actions{gap:6px}
+  .strokes-num{font-size:14px}
+}
+
+@media (min-width:360px) and (max-width:430px) and (orientation:portrait){
+  .swing .notes{display:block}
+  .swing .notes input{width:100%}
+  .swing .small{padding:6px 8px;font-size:12px}
+}
+
+/* compact icon-only labels for portrait compact mode */
+@media (min-width:360px) and (max-width:430px) and (orientation:portrait){
+  .label-text{display:none}
+  .label-icon{display:inline-block;margin-right:6px}
+  .swings-actions .small{background:#0b8457;color:#fff}
+  .swings-actions .small[disabled]{opacity:0.6}
 }
 
 /* ensure desktop retains regular spacing */

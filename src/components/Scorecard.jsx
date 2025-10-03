@@ -172,12 +172,16 @@ export default function Scorecard({holes=18}){
                             row.swings.map((s, sidx) => (
                               <div className={`swing feel-${s.satisfaction}`} key={sidx}>
                                 <div className="swing-index">#{sidx+1}</div>
-                                <label>Club
+                                <label>
+                                  <span className="label-icon">🏌️</span>
+                                  <span className="label-text">Club</span>
                                   <select value={s.club} onChange={e=> updateSwing(idx,sidx,'club',e.target.value)}>
                                     {clubs.map((cname,ci)=> <option key={ci} value={cname}>{cname}</option>)}
                                   </select>
                                 </label>
-                                <label>Terrain
+                                <label>
+                                  <span className="label-icon">🌿</span>
+                                  <span className="label-text">Terrain</span>
                                   <select value={s.terrain} onChange={e=> updateSwing(idx,sidx,'terrain',e.target.value)}>
                                     <option>Fairway</option>
                                     <option>Rough</option>
@@ -187,7 +191,9 @@ export default function Scorecard({holes=18}){
                                     <option>Hazard</option>
                                   </select>
                                 </label>
-                                <label>Feel
+                                <label>
+                                  <span className="label-icon">⭐</span>
+                                  <span className="label-text">Feel</span>
                                   <select value={s.satisfaction} onChange={e=> updateSwing(idx,sidx,'satisfaction',Number(e.target.value))}>
                                     <option value={1}>1</option>
                                     <option value={2}>2</option>
@@ -208,6 +214,7 @@ export default function Scorecard({holes=18}){
 
                           <div className="swings-actions">
                             <button onClick={()=> addSwing(idx)}>Add Swing</button>
+                            <button className="small" onClick={()=> setOpen(o=> ({...o, [idx]: false}))}>Done</button>
                             <button className="small mute" onClick={()=> setClubsOpen(s=>!s)}>{clubsOpen ? 'Hide Clubs' : 'Manage Clubs'}</button>
                           </div>
 
@@ -281,14 +288,18 @@ export default function Scorecard({holes=18}){
                   <div className="swings">
                     {(row.swings || []).length>0 ? (
               (row.swings || []).map((s,sidx) => (
-            <div className={`swing feel-${s.satisfaction}`} key={`ms-${sidx}`}>
+              <div className={`swing feel-${s.satisfaction}`} key={`ms-${sidx}`}>
                           <div className="swing-index">#{sidx+1}</div>
-                          <label>Club
+                          <label>
+                            <span className="label-icon">🏌️</span>
+                            <span className="label-text">Club</span>
                             <select value={s.club} onChange={e=> updateSwing(idx,sidx,'club',e.target.value)}>
                               {clubs.map((cname,ci)=> <option key={ci} value={cname}>{cname}</option>)}
                             </select>
                           </label>
-                          <label>Terrain
+                          <label>
+                            <span className="label-icon">🌿</span>
+                            <span className="label-text">Terrain</span>
                             <select value={s.terrain} onChange={e=> updateSwing(idx,sidx,'terrain',e.target.value)}>
                               <option>Fairway</option>
                               <option>Rough</option>
@@ -298,7 +309,9 @@ export default function Scorecard({holes=18}){
                               <option>Hazard</option>
                             </select>
                           </label>
-                          <label>Feel
+                          <label>
+                            <span className="label-icon">⭐</span>
+                            <span className="label-text">Feel</span>
                             <select value={s.satisfaction} onChange={e=> updateSwing(idx,sidx,'satisfaction',Number(e.target.value))}>
                               <option value={1}>1</option>
                               <option value={2}>2</option>
@@ -306,10 +319,11 @@ export default function Scorecard({holes=18}){
                               <option value={4}>4</option>
                               <option value={5}>5</option>
                             </select>
-                          </label>
+                        </label>
                           <label className="notes">Notes
                             <input value={s.notes||''} onChange={e=> updateSwing(idx,sidx,'notes',e.target.value)} placeholder="short note" />
                           </label>
+
                           <button className="small danger" onClick={()=> removeSwing(idx,sidx)}>Remove</button>
                         </div>
                       ))
