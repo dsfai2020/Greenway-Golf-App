@@ -4,6 +4,8 @@
   --muted:#6b6b6b;
   --card:#f7f9f7;
 }
+/* Prevent mobile browsers from auto-adjusting text size when focusing inputs */
+html{ -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; -moz-text-size-adjust:100%; text-size-adjust:100%; }
 *{box-sizing:border-box}
 body{font-family:Inter,Segoe UI,system-ui,Arial;background:linear-gradient(180deg,#eaf6ef,white);color:var(--dark);margin:0}
 .site-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(255,255,255,0.6);backdrop-filter:blur(6px);border-bottom:1px solid rgba(0,0,0,0.05)}

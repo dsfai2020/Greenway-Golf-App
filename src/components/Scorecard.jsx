@@ -44,6 +44,16 @@ export default function Scorecard({holes=18}){
 
   const [clubsOpen, setClubsOpen] = useState(false)
   const clubInputRefs = React.useRef({})
+  const [bulkOpen, setBulkOpen] = useState(false)
+  const [bulkText, setBulkText] = useState('')
+
+  // keep bulkText in sync when opening the bulk editor
+  useEffect(()=>{
+    if(!bulkOpen) return
+    // derive a simple comma-separated list of pars
+    const vals = rows.map(r => Number(r.par || 4))
+    setBulkText(vals.join(', '))
+  },[bulkOpen, rows])
 
   useEffect(()=>{
     try{ localStorage.setItem(clubsKey, JSON.stringify(clubs)) }catch(e){}
@@ -95,6 +105,29 @@ export default function Scorecard({holes=18}){
 
   function updatePar(idx, value){
     setRows(r => r.map((row,i) => i===idx ? {...row, par: value} : row))
+    if(bulkOpen){
+      setBulkText(prev => {
+        const parts = prev.split(/[^0-9]+/).filter(Boolean)
+        // ensure length
+        const next = Array.from({length: holes}, (_,i) => i===idx ? String(value) : (parts[i]|| String((rows[i] && rows[i].par) || 4)))
+        return next.join(', ')
+      })
+    }
+  }
+
+  // Bulk par update: accepts comma/space/newline separated numbers and applies them to holes
+  function applyBulkPars(){
+    try{
+      const parts = (bulkText||'').split(/[^0-9]+/).filter(Boolean).map(s=> Number(s))
+      if(parts.length === 0) return
+      const next = Array.from({length: holes}, (_,i) => ({...rows[i], par: (typeof parts[i] === 'number' && !isNaN(parts[i])) ? parts[i] : (rows[i] ? rows[i].par : 4)}))
+      setRows(next)
+      setBulkOpen(false)
+    }catch(e){ }
+  }
+
+  function resetBulk(){
+    setBulkText(Array.from({length: holes}, ()=> 4).join(', '))
   }
 
   function addSwing(idx){
@@ -159,6 +192,18 @@ export default function Scorecard({holes=18}){
 
   return (
     <div className="scorecard">
+      <div className="bulk-par-editor" style={{marginBottom:12}}>
+        <button className="small" onClick={()=> setBulkOpen(b=>!b)}>{bulkOpen ? 'Hide' : 'Bulk Edit Pars'}</button>
+        {bulkOpen && (
+          <div style={{marginTop:8,display:'flex',gap:8,alignItems:'flex-start'}}>
+            <textarea value={bulkText} onChange={e=> setBulkText(e.target.value)} placeholder={`Enter ${holes} par values separated by commas or newlines`} style={{flex:1,minHeight:80,padding:8,borderRadius:6,border:'1px solid #ddd'}} />
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              <button onClick={applyBulkPars}>Apply</button>
+              <button className="small mute" onClick={resetBulk}>Reset</button>
+            </div>
+          </div>
+        )}
+      </div>
       <table>
         <thead>
           <tr>
