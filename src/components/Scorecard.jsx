@@ -32,6 +32,8 @@ export default function Scorecard({holes=18}){
   })
 
   const [open, setOpen] = useState(() => ({}))
+  const rowRefs = React.useRef({})
+  const mobileRefs = React.useRef({})
   const [clubs, setClubs] = useState(()=>{
     try{
       const raw = localStorage.getItem(clubsKey)
@@ -64,6 +66,32 @@ export default function Scorecard({holes=18}){
       try{ window.dispatchEvent(new CustomEvent('golf:updated', { detail: { key } })) }catch(e){}
     }catch(e){}
   },[rows,key])
+
+  // Listen for hole selection events from the heatmap and open/scroll to that hole
+  useEffect(()=>{
+    function onSelect(e){
+      try{
+        const hole = (e && e.detail && typeof e.detail.hole === 'number') ? e.detail.hole : null
+        if(hole == null) return
+        // open the hole in the UI
+        setOpen(o => ({...o, [hole]: true}))
+        // scroll into view for desktop table row if available, otherwise mobile card
+        setTimeout(()=>{
+          const tr = rowRefs.current[hole]
+          if(tr && typeof tr.scrollIntoView === 'function'){
+            tr.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            return
+          }
+          const mc = mobileRefs.current[hole]
+          if(mc && typeof mc.scrollIntoView === 'function'){
+            mc.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
+        }, 50)
+      }catch(err){ }
+    }
+    window.addEventListener('golf:select-hole', onSelect)
+    return () => window.removeEventListener('golf:select-hole', onSelect)
+  }, [])
 
   function updatePar(idx, value){
     setRows(r => r.map((row,i) => i===idx ? {...row, par: value} : row))
@@ -148,7 +176,7 @@ export default function Scorecard({holes=18}){
             const result = strokes > 0 ? getResultLabel(strokes, row.par) : null
             return (
               <React.Fragment key={idx}>
-                <tr className={strokes>row.par? 'over' : ''}>
+                <tr ref={el => rowRefs.current[idx] = el} className={strokes>row.par? 'over' : ''}>
                   <td>{idx+1}</td>
                   <td>
                     <input type="number" min="3" max="6" value={row.par} onChange={e=> updatePar(idx, Number(e.target.value))} />
@@ -264,7 +292,7 @@ export default function Scorecard({holes=18}){
           const strokes = (row.swings || []).length
           const result = strokes > 0 ? getResultLabel(strokes, row.par) : null
           return (
-            <div className="mobile-hole" key={`m-${idx}`}>
+              <div className="mobile-hole" key={`m-${idx}`} ref={el => mobileRefs.current[idx] = el}>
               <div className="mobile-head">
                 <div className="mobile-left">
                   <div className="hole-num">Hole {idx+1}</div>

@@ -82,7 +82,17 @@ export default function Heatmap({holes=18, view='all'}){
           const avg = shown.length ? shown.reduce((s,x)=> s + (Number(x.satisfaction||3)),0)/shown.length : (swings.length ? swings.reduce((s,x)=> s + (Number(x.satisfaction||3)),0)/swings.length : null)
           const cls = feelToClass(avg)
           return (
-            <div key={i} className={`heatcell ${cls}`} title={avg? `Avg feel ${avg.toFixed(2)}` : 'No swings'}>
+            <div
+              key={i}
+              className={`heatcell ${cls}`}
+              title={avg? `Avg feel ${avg.toFixed(2)}` : 'No swings'}
+              role="button"
+              tabIndex={0}
+              aria-label={avg? `Hole ${i+1} average feel ${avg.toFixed(2)}` : `Hole ${i+1}, no swings`}
+              data-hole-index={i}
+              onClick={() => window.dispatchEvent(new CustomEvent('golf:select-hole', { detail: { hole: i } }))}
+              onKeyDown={(e) => { if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.dispatchEvent(new CustomEvent('golf:select-hole', { detail: { hole: i } })) } }}
+            >
               <div className="cell-inner">
                 <div className="hole-number">{i+1}</div>
                 {
