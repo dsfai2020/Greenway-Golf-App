@@ -1,4 +1,5 @@
 import React from 'react'
+import Profile from '../components/Profile'
 
 export default function Home(){
   return (
@@ -16,6 +17,7 @@ export default function Home(){
           <h3>About</h3>
           <p>Designed for simplicity and speed on the course.</p>
         </div>
+        <Profile />
       </div>
     </section>
   )

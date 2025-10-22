@@ -23,6 +23,7 @@ body{font-family:Inter,Segoe UI,system-ui,Arial;background:linear-gradient(180de
 .hero{background:linear-gradient(90deg,rgba(11,132,87,0.06),rgba(7,32,26,0.02));padding:28px;border-radius:12px}
 .cards{display:flex;gap:12px;margin-top:16px}
 .card{background:var(--card);padding:16px;border-radius:10px;flex:1}
+.profile-card{min-width:220px}
 .controls{margin:16px 0}
 .scorecard table{width:100%;border-collapse:collapse;background:white;border-radius:8px;overflow:hidden}
 .scorecard th,.scorecard td{padding:8px;text-align:center;border-bottom:1px solid #eee}
