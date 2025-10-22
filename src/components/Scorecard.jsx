@@ -46,6 +46,8 @@ export default function Scorecard({holes=18}){
   const clubInputRefs = React.useRef({})
   const [bulkOpen, setBulkOpen] = useState(false)
   const [bulkText, setBulkText] = useState('')
+  const [showFront9, setShowFront9] = useState(true)
+  const [showBack9, setShowBack9] = useState(true)
 
   // keep bulkText in sync when opening the bulk editor
   useEffect(()=>{
@@ -175,9 +177,6 @@ export default function Scorecard({holes=18}){
     setRows(makeInitial(holes))
   }
 
-  const totalStrokes = rows.reduce((s,row) => s + (row.swings ? row.swings.length : 0),0)
-  const totalPar = rows.reduce((s,row) => s + Number(row.par||0),0)
-
   function getResultLabel(strokes, par){
     const diff = strokes - par
     if(diff <= -3) return {label: 'Albatross', cls: 'albatross'}
@@ -189,6 +188,17 @@ export default function Scorecard({holes=18}){
     if(diff === 3) return {label: 'Triple Bogey', cls: 'triple'}
     return {label: diff > 0 ? `+${diff}` : `${diff}`, cls: diff>0 ? 'other-pos' : 'other-neg'}
   }
+
+  // Filter rows based on nine visibility
+  const visibleRows = rows.map((row, idx) => ({row, idx})).filter(({row, idx}) => {
+    if(holes !== 18) return true // Show all for 9-hole rounds
+    const isFront9 = idx < 9
+    const isBack9 = idx >= 9
+    return (isFront9 && showFront9) || (isBack9 && showBack9)
+  })
+
+  const totalStrokes = visibleRows.reduce((s,{row}) => s + (row.swings ? row.swings.length : 0),0)
+  const totalPar = visibleRows.reduce((s,{row}) => s + Number(row.par||0),0)
 
   return (
     <div className="scorecard">
@@ -204,6 +214,25 @@ export default function Scorecard({holes=18}){
           </div>
         )}
       </div>
+      
+      {holes === 18 && (
+        <div className="nine-toggles" style={{marginBottom:12,display:'flex',gap:8,alignItems:'center'}}>
+          <span style={{fontSize:14,fontWeight:500}}>Show:</span>
+          <button 
+            className={`small ${showFront9 ? '' : 'mute'} ${!showFront9 ? 'nine-toggle-hidden' : ''}`}
+            onClick={() => setShowFront9(!showFront9)}
+          >
+            Front 9
+          </button>
+          <button 
+            className={`small ${showBack9 ? '' : 'mute'} ${!showBack9 ? 'nine-toggle-hidden' : ''}`}
+            onClick={() => setShowBack9(!showBack9)}
+          >
+            Back 9
+          </button>
+        </div>
+      )}
+      
       <table>
         <thead>
           <tr>
@@ -216,7 +245,7 @@ export default function Scorecard({holes=18}){
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, idx) => {
+          {visibleRows.map(({row, idx}) => {
             const strokes = (row.swings || []).length
             const result = strokes > 0 ? getResultLabel(strokes, row.par) : null
             return (
@@ -255,25 +284,34 @@ export default function Scorecard({holes=18}){
                                 <label>
                                   <span className="label-icon">🌿</span>
                                   <span className="label-text">Terrain</span>
-                                  <select value={s.terrain} onChange={e=> updateSwing(idx,sidx,'terrain',e.target.value)}>
-                                    <option>Fairway</option>
-                                    <option>Rough</option>
-                                    <option>Bunker</option>
-                                    <option>Green</option>
-                                    <option>Fringe</option>
-                                    <option>Hazard</option>
-                                  </select>
+                                  <div className="button-group">
+                                    {['Fairway', 'Rough', 'Bunker', 'Green', 'Fringe', 'Hazard'].map(terrain => (
+                                      <button
+                                        key={terrain}
+                                        type="button"
+                                        className={`button-group-item ${s.terrain === terrain ? 'active' : ''}`}
+                                        onClick={() => updateSwing(idx, sidx, 'terrain', terrain)}
+                                      >
+                                        {terrain}
+                                      </button>
+                                    ))}
+                                  </div>
                                 </label>
                                 <label>
                                   <span className="label-icon">⭐</span>
                                   <span className="label-text">Feel</span>
-                                  <select value={s.satisfaction} onChange={e=> updateSwing(idx,sidx,'satisfaction',Number(e.target.value))}>
-                                    <option value={1}>1</option>
-                                    <option value={2}>2</option>
-                                    <option value={3}>3</option>
-                                    <option value={4}>4</option>
-                                    <option value={5}>5</option>
-                                  </select>
+                                  <div className="button-group">
+                                    {[1, 2, 3, 4, 5].map(feel => (
+                                      <button
+                                        key={feel}
+                                        type="button"
+                                        className={`button-group-item ${s.satisfaction === feel ? 'active' : ''}`}
+                                        onClick={() => updateSwing(idx, sidx, 'satisfaction', feel)}
+                                      >
+                                        {feel}
+                                      </button>
+                                    ))}
+                                  </div>
                                 </label>
                                 <label className="notes">Notes
                                   <input value={s.notes||''} onChange={e=> updateSwing(idx,sidx,'notes',e.target.value)} placeholder="short note" />
@@ -333,7 +371,7 @@ export default function Scorecard({holes=18}){
 
       {/* Mobile-friendly card list (shown only on small screens via CSS) */}
       <div className="mobile-list">
-        {rows.map((row, idx) => {
+        {visibleRows.map(({row, idx}) => {
           const strokes = (row.swings || []).length
           const result = strokes > 0 ? getResultLabel(strokes, row.par) : null
           return (
@@ -373,25 +411,34 @@ export default function Scorecard({holes=18}){
                           <label>
                             <span className="label-icon">🌿</span>
                             <span className="label-text">Terrain</span>
-                            <select value={s.terrain} onChange={e=> updateSwing(idx,sidx,'terrain',e.target.value)}>
-                              <option>Fairway</option>
-                              <option>Rough</option>
-                              <option>Bunker</option>
-                              <option>Green</option>
-                              <option>Fringe</option>
-                              <option>Hazard</option>
-                            </select>
+                            <div className="button-group">
+                              {['Fairway', 'Rough', 'Bunker', 'Green', 'Fringe', 'Hazard'].map(terrain => (
+                                <button
+                                  key={terrain}
+                                  type="button"
+                                  className={`button-group-item ${s.terrain === terrain ? 'active' : ''}`}
+                                  onClick={() => updateSwing(idx, sidx, 'terrain', terrain)}
+                                >
+                                  {terrain}
+                                </button>
+                              ))}
+                            </div>
                           </label>
                           <label>
                             <span className="label-icon">⭐</span>
                             <span className="label-text">Feel</span>
-                            <select value={s.satisfaction} onChange={e=> updateSwing(idx,sidx,'satisfaction',Number(e.target.value))}>
-                              <option value={1}>1</option>
-                              <option value={2}>2</option>
-                              <option value={3}>3</option>
-                              <option value={4}>4</option>
-                              <option value={5}>5</option>
-                            </select>
+                            <div className="button-group">
+                              {[1, 2, 3, 4, 5].map(feel => (
+                                <button
+                                  key={feel}
+                                  type="button"
+                                  className={`button-group-item ${s.satisfaction === feel ? 'active' : ''}`}
+                                  onClick={() => updateSwing(idx, sidx, 'satisfaction', feel)}
+                                >
+                                  {feel}
+                                </button>
+                              ))}
+                            </div>
                         </label>
                           <label className="notes">Notes
                             <input value={s.notes||''} onChange={e=> updateSwing(idx,sidx,'notes',e.target.value)} placeholder="short note" />
