@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
+import CelebratoryModal from './CelebratoryModal'
 
 function makeInitial(h){
-  return Array.from({length: h}, () => ({par: 4, swings: []}))
+  return Array.from({length: h}, () => ({par: 4, swings: [], completed: false}))
 }
 
 const defaultSwing = () => ({ club: '7I', terrain: 'Fairway', satisfaction: 3, notes: '' })
@@ -17,12 +18,13 @@ export default function Scorecard({holes=18}){
       if(raw){
         const parsed = JSON.parse(raw)
         if(Array.isArray(parsed)){
-          // normalize entries: convert old {strokes: N} -> swings array, ensure par present
+          // normalize entries: convert old {strokes: N} -> swings array, ensure par and completed present
           const normalized = parsed.map(p => {
             const par = (p && typeof p.par === 'number') ? p.par : 4
-            if(p && Array.isArray(p.swings)) return {par, swings: p.swings}
-            if(p && typeof p.strokes === 'number') return {par, swings: Array.from({length: p.strokes}, ()=> defaultSwing())}
-            return {par, swings: []}
+            const completed = (p && typeof p.completed === 'boolean') ? p.completed : false
+            if(p && Array.isArray(p.swings)) return {par, swings: p.swings, completed}
+            if(p && typeof p.strokes === 'number') return {par, swings: Array.from({length: p.strokes}, ()=> defaultSwing()), completed}
+            return {par, swings: [], completed}
           })
           return normalized
         }
@@ -48,6 +50,15 @@ export default function Scorecard({holes=18}){
   const [bulkText, setBulkText] = useState('')
   const [showFront9, setShowFront9] = useState(true)
   const [showBack9, setShowBack9] = useState(true)
+
+  // State for celebration modal
+  const [celebrationModal, setCelebrationModal] = useState({
+    isOpen: false,
+    holeNumber: 0,
+    strokes: 0,
+    par: 0,
+    result: null
+  })
 
   // keep bulkText in sync when opening the bulk editor
   useEffect(()=>{
@@ -173,6 +184,37 @@ export default function Scorecard({holes=18}){
     }))
   }
 
+  function completeHole(idx) {
+    const row = rows[idx]
+    if (!row || row.swings.length === 0) return
+    
+    const strokes = row.swings.length
+    const result = getResultLabel(strokes, row.par)
+    
+    // Mark hole as completed
+    setRows(r => r.map((holeRow, i) => i === idx ? {...holeRow, completed: true} : holeRow))
+    
+    // Show simple celebration modal
+    setCelebrationModal({
+      isOpen: true,
+      holeNumber: idx + 1,
+      strokes: strokes,
+      par: row.par,
+      result: result
+    })
+  }
+
+  function closeCelebrationModal() {
+    console.log('Closing modal') // Debug log
+    setCelebrationModal({
+      isOpen: false,
+      holeNumber: 0,
+      strokes: 0,
+      par: 0,
+      result: null
+    })
+  }
+
   function reset(){
     setRows(makeInitial(holes))
   }
@@ -262,6 +304,24 @@ export default function Scorecard({holes=18}){
                     <button className="small" onClick={()=> setOpen(o=> ({...o, [idx]: !o[idx]}))}>{open[idx] ? 'Hide' : 'Swings'}</button>
                     <button className="small mute" onClick={()=> addSwing(idx)}>+ Swing</button>
                     <button className="small danger" onClick={()=> removeLastSwing(idx)} disabled={strokes===0} title="Remove last swing">−</button>
+                    {open[idx] && strokes > 0 && !row.completed && (
+                      <button 
+                        className="done-button" 
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          completeHole(idx)
+                        }} 
+                        title="Complete hole"
+                      >
+                        Done ⛳
+                      </button>
+                    )}
+                    {row.completed && (
+                      <span className="completed-indicator" title="Hole completed">
+                        ✅ Complete
+                      </span>
+                    )}
                   </td>
                 </tr>
 
@@ -392,6 +452,24 @@ export default function Scorecard({holes=18}){
                 <button className="small" onClick={()=> setOpen(o=> ({...o, [idx]: !o[idx]}))}>{open[idx] ? 'Hide' : 'Swings'}</button>
                 <button className="small mute" onClick={()=> addSwing(idx)}>+ Swing</button>
                 <button className="small danger" onClick={()=> removeLastSwing(idx)} disabled={strokes===0}>−</button>
+                {open[idx] && strokes > 0 && !row.completed && (
+                  <button 
+                    className="done-button" 
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      completeHole(idx)
+                    }} 
+                    title="Complete hole"
+                  >
+                    Done ⛳
+                  </button>
+                )}
+                {row.completed && (
+                  <span className="completed-indicator" title="Hole completed">
+                    ✅ Complete
+                  </span>
+                )}
               </div>
 
               {open[idx] && (
@@ -464,6 +542,16 @@ export default function Scorecard({holes=18}){
         <button onClick={reset}>Reset</button>
         <button onClick={()=> navigator.clipboard?.writeText(JSON.stringify(rows))}>Copy JSON</button>
       </div>
+
+      <CelebratoryModal
+        key={`modal-${celebrationModal.holeNumber}-${celebrationModal.isOpen}`}
+        isOpen={celebrationModal.isOpen}
+        onClose={closeCelebrationModal}
+        holeNumber={celebrationModal.holeNumber}
+        strokes={celebrationModal.strokes}
+        par={celebrationModal.par}
+        result={celebrationModal.result}
+      />
     </div>
   )
 }
