@@ -24,8 +24,8 @@ const CelebratoryModal = ({ isOpen, onClose, holeNumber, strokes, par, result })
     scoreMessage = 'NICE BOGEY!'
     scoreIcon = '⚡'
   } else if (diff >= 2) {
-    scoreMessage = 'KEEP GOING!'
-    scoreIcon = '💪'
+    scoreMessage ='LOCK IN FOR THE NEXT ONE!'
+    scoreIcon = '🧊'
   }
 
   return (
