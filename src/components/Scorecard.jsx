@@ -347,48 +347,60 @@ export default function Scorecard({holes=18}){
                             row.swings.map((s, sidx) => (
                               <div className={`swing feel-${s.satisfaction}`} key={sidx}>
                                 <div className="swing-index">#{sidx+1}</div>
-                                <label>
-                                  <span className="label-icon">🏌️</span>
-                                  <span className="label-text">Club</span>
-                                  <select value={s.club} onChange={e=> updateSwing(idx,sidx,'club',e.target.value)}>
-                                    {clubs.map((cname,ci)=> <option key={ci} value={cname}>{cname}</option>)}
-                                  </select>
-                                </label>
-                                <label>
-                                  <span className="label-icon">🌿</span>
-                                  <span className="label-text">Terrain</span>
-                                  <div className="button-group">
-                                    {['Fairway', 'Rough', 'Bunker', 'Green', 'Fringe', 'Hazard'].map(terrain => (
-                                      <button
-                                        key={terrain}
-                                        type="button"
-                                        className={`button-group-item ${s.terrain === terrain ? 'active' : ''}`}
-                                        onClick={() => updateSwing(idx, sidx, 'terrain', terrain)}
-                                      >
-                                        {terrain}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </label>
-                                <label>
-                                  <span className="label-icon">⭐</span>
-                                  <span className="label-text">Feel</span>
-                                  <div className="button-group">
-                                    {[1, 2, 3, 4, 5].map(feel => (
-                                      <button
-                                        key={feel}
-                                        type="button"
-                                        className={`button-group-item ${s.satisfaction === feel ? 'active' : ''}`}
-                                        onClick={() => updateSwing(idx, sidx, 'satisfaction', feel)}
-                                      >
-                                        {feel}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </label>
-                                <label className="notes">Notes
-                                  <input value={s.notes||''} onChange={e=> updateSwing(idx,sidx,'notes',e.target.value)} placeholder="short note" />
-                                </label>
+                                <div className="swing-tracker-grid">
+                                  <label className="swing-tracker-column">
+                                    <span className="swing-tracker-header">
+                                      <span className="label-icon">🏌️</span>
+                                      <span className="label-text">Club</span>
+                                    </span>
+                                    <select value={s.club} onChange={e=> updateSwing(idx,sidx,'club',e.target.value)}>
+                                      {clubs.map((cname,ci)=> <option key={ci} value={cname}>{cname}</option>)}
+                                    </select>
+                                  </label>
+                                  <label className="swing-tracker-column">
+                                    <span className="swing-tracker-header">
+                                      <span className="label-icon">🌿</span>
+                                      <span className="label-text">Terrain</span>
+                                    </span>
+                                    <div className="button-group">
+                                      {['Fairway', 'Rough', 'Bunker', 'Green', 'Fringe', 'Hazard'].map(terrain => (
+                                        <button
+                                          key={terrain}
+                                          type="button"
+                                          className={`button-group-item ${s.terrain === terrain ? 'active' : ''}`}
+                                          onClick={() => updateSwing(idx, sidx, 'terrain', terrain)}
+                                        >
+                                          {terrain}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </label>
+                                  <label className="swing-tracker-column">
+                                    <span className="swing-tracker-header">
+                                      <span className="label-icon">⭐</span>
+                                      <span className="label-text">Feel</span>
+                                    </span>
+                                    <div className="button-group">
+                                      {[1, 2, 3, 4, 5].map(feel => (
+                                        <button
+                                          key={feel}
+                                          type="button"
+                                          className={`button-group-item ${s.satisfaction === feel ? 'active' : ''}`}
+                                          onClick={() => updateSwing(idx, sidx, 'satisfaction', feel)}
+                                        >
+                                          {feel}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </label>
+                                  <label className="swing-tracker-notes">
+                                    <span className="swing-tracker-header">
+                                      <span className="label-icon">📝</span>
+                                      <span className="label-text">Notes</span>
+                                    </span>
+                                    <input value={s.notes||''} onChange={e=> updateSwing(idx,sidx,'notes',e.target.value)} placeholder="short note" />
+                                  </label>
+                                </div>
                                 <button className="small danger" onClick={()=> removeSwing(idx,sidx)}>Remove</button>
                               </div>
                             ))
@@ -492,48 +504,60 @@ export default function Scorecard({holes=18}){
               (row.swings || []).map((s,sidx) => (
               <div className={`swing feel-${s.satisfaction}`} key={`ms-${sidx}`}>
                           <div className="swing-index">#{sidx+1}</div>
-                          <label>
-                            <span className="label-icon">🏌️</span>
-                            <span className="label-text">Club</span>
-                            <select value={s.club} onChange={e=> updateSwing(idx,sidx,'club',e.target.value)}>
-                              {clubs.map((cname,ci)=> <option key={ci} value={cname}>{cname}</option>)}
-                            </select>
-                          </label>
-                          <label>
-                            <span className="label-icon">🌿</span>
-                            <span className="label-text">Terrain</span>
-                            <div className="button-group">
-                              {['Fairway', 'Rough', 'Bunker', 'Green', 'Fringe', 'Hazard'].map(terrain => (
-                                <button
-                                  key={terrain}
-                                  type="button"
-                                  className={`button-group-item ${s.terrain === terrain ? 'active' : ''}`}
-                                  onClick={() => updateSwing(idx, sidx, 'terrain', terrain)}
-                                >
-                                  {terrain}
-                                </button>
-                              ))}
-                            </div>
-                          </label>
-                          <label>
-                            <span className="label-icon">⭐</span>
-                            <span className="label-text">Feel</span>
-                            <div className="button-group">
-                              {[1, 2, 3, 4, 5].map(feel => (
-                                <button
-                                  key={feel}
-                                  type="button"
-                                  className={`button-group-item ${s.satisfaction === feel ? 'active' : ''}`}
-                                  onClick={() => updateSwing(idx, sidx, 'satisfaction', feel)}
-                                >
-                                  {feel}
-                                </button>
-                              ))}
-                            </div>
-                        </label>
-                          <label className="notes">Notes
-                            <input value={s.notes||''} onChange={e=> updateSwing(idx,sidx,'notes',e.target.value)} placeholder="short note" />
-                          </label>
+                          <div className="swing-tracker-grid">
+                            <label className="swing-tracker-column">
+                              <span className="swing-tracker-header">
+                                <span className="label-icon">🏌️</span>
+                                <span className="label-text">Club</span>
+                              </span>
+                              <select value={s.club} onChange={e=> updateSwing(idx,sidx,'club',e.target.value)}>
+                                {clubs.map((cname,ci)=> <option key={ci} value={cname}>{cname}</option>)}
+                              </select>
+                            </label>
+                            <label className="swing-tracker-column">
+                              <span className="swing-tracker-header">
+                                <span className="label-icon">🌿</span>
+                                <span className="label-text">Terrain</span>
+                              </span>
+                              <div className="button-group">
+                                {['Fairway', 'Rough', 'Bunker', 'Green', 'Fringe', 'Hazard'].map(terrain => (
+                                  <button
+                                    key={terrain}
+                                    type="button"
+                                    className={`button-group-item ${s.terrain === terrain ? 'active' : ''}`}
+                                    onClick={() => updateSwing(idx, sidx, 'terrain', terrain)}
+                                  >
+                                    {terrain}
+                                  </button>
+                                ))}
+                              </div>
+                            </label>
+                            <label className="swing-tracker-column">
+                              <span className="swing-tracker-header">
+                                <span className="label-icon">⭐</span>
+                                <span className="label-text">Feel</span>
+                              </span>
+                              <div className="button-group">
+                                {[1, 2, 3, 4, 5].map(feel => (
+                                  <button
+                                    key={feel}
+                                    type="button"
+                                    className={`button-group-item ${s.satisfaction === feel ? 'active' : ''}`}
+                                    onClick={() => updateSwing(idx, sidx, 'satisfaction', feel)}
+                                  >
+                                    {feel}
+                                  </button>
+                                ))}
+                              </div>
+                            </label>
+                            <label className="swing-tracker-notes">
+                              <span className="swing-tracker-header">
+                                <span className="label-icon">📝</span>
+                                <span className="label-text">Notes</span>
+                              </span>
+                              <input value={s.notes||''} onChange={e=> updateSwing(idx,sidx,'notes',e.target.value)} placeholder="short note" />
+                            </label>
+                          </div>
 
                           <button className="small danger" onClick={()=> removeSwing(idx,sidx)}>Remove</button>
                         </div>
