@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import CelebratoryModal from './CelebratoryModal'
+import ScoreboardSummary from './ScoreboardSummary'
 
 function makeInitial(h){
   return Array.from({length: h}, () => ({par: 4, swings: [], completed: false}))
@@ -538,6 +539,9 @@ export default function Scorecard({holes=18}){
           )
         })}
       </div>
+      
+      <ScoreboardSummary rows={rows} />
+      
       <div className="actions">
         <button onClick={reset}>Reset</button>
         <button onClick={()=> navigator.clipboard?.writeText(JSON.stringify(rows))}>Copy JSON</button>
