@@ -7,7 +7,7 @@ function makeInitial(h){
   return Array.from({length: h}, () => ({par: 4, swings: [], completed: false}))
 }
 
-const defaultSwing = () => ({ club: '7I', terrain: 'Fairway', satisfaction: 3, notes: '' })
+const defaultSwing = () => ({ club: '7I', terrain: 'Fairway', satisfaction: 3, notes: '', distance: 150 })
 
 const defaultClubs = ['Driver','3W','5W','3I','5I','7I','PW','SW','Putter']
 
@@ -400,6 +400,21 @@ export default function Scorecard({holes=18}){
                                     </span>
                                     <input value={s.notes||''} onChange={e=> updateSwing(idx,sidx,'notes',e.target.value)} placeholder="short note" />
                                   </label>
+                                  <label className="swing-tracker-distance">
+                                    <span className="swing-tracker-header">
+                                      <span className="label-icon">📏</span>
+                                      <span className="label-text">Distance</span>
+                                      <span className="distance-value">{s.distance || 150} yds</span>
+                                    </span>
+                                    <input 
+                                      type="range" 
+                                      min="0" 
+                                      max="400" 
+                                      value={s.distance || 150} 
+                                      onChange={e=> updateSwing(idx,sidx,'distance',Number(e.target.value))}
+                                      className="distance-slider"
+                                    />
+                                  </label>
                                 </div>
                                 <button className="small danger" onClick={()=> removeSwing(idx,sidx)}>Remove</button>
                               </div>
@@ -556,6 +571,21 @@ export default function Scorecard({holes=18}){
                                 <span className="label-text">Notes</span>
                               </span>
                               <input value={s.notes||''} onChange={e=> updateSwing(idx,sidx,'notes',e.target.value)} placeholder="short note" />
+                            </label>
+                            <label className="swing-tracker-distance">
+                              <span className="swing-tracker-header">
+                                <span className="label-icon">📏</span>
+                                <span className="label-text">Distance</span>
+                                <span className="distance-value">{s.distance || 150} yds</span>
+                              </span>
+                              <input 
+                                type="range" 
+                                min="0" 
+                                max="400" 
+                                value={s.distance || 150} 
+                                onChange={e=> updateSwing(idx,sidx,'distance',Number(e.target.value))}
+                                className="distance-slider"
+                              />
                             </label>
                           </div>
 
