@@ -1641,6 +1641,59 @@ input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #dd
   width: 100%;
 }
 
+.swing-tracker-distance {
+  grid-column: 1 / -1; /* Span all three columns */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.swing-tracker-distance .swing-tracker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.distance-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--green);
+  margin-left: auto;
+}
+
+.distance-slider {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, #e0e0e0 0%, var(--green) 100%);
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.distance-slider::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--green);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.distance-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--green);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
 /* Mobile-specific adjustments */
 @media (max-width: 700px) {
   .swing {
