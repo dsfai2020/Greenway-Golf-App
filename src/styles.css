@@ -5,16 +5,44 @@
   --card:#f7f9f7;
 }
 /* Prevent mobile browsers from auto-adjusting text size when focusing inputs */
-html{ -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; -moz-text-size-adjust:100%; text-size-adjust:100%; }
+html{ 
+  -webkit-text-size-adjust:100%; 
+  -ms-text-size-adjust:100%; 
+  -moz-text-size-adjust:100%; 
+  text-size-adjust:100%;
+  /* iOS scrolling optimizations */
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
 *{box-sizing:border-box}
-body{font-family:Inter,Segoe UI,system-ui,Arial;background:linear-gradient(180deg,#eaf6ef,white);color:var(--dark);margin:0}
+
+body{
+  font-family:Inter,Segoe UI,system-ui,Arial;
+  background:linear-gradient(180deg,#eaf6ef,white);
+  color:var(--dark);
+  margin:0;
+  /* Prevent iOS scroll bounce stuttering */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
 .site-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(255,255,255,0.6);backdrop-filter:blur(6px);border-bottom:1px solid rgba(0,0,0,0.05)}
 .brand{display:flex;align-items:center;gap:10px}
 .logo{font-size:28px}
 .title{font-weight:700;font-size:18px;color:var(--green)}
 .nav a{margin:0 8px;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:8px}
 .nav a.active{background:var(--green);color:white}
-.container{padding:24px;max-width:1100px;margin:0 auto}
+.container{
+  padding:24px;
+  max-width:1100px;
+  margin:0 auto;
+  /* iOS scroll optimization */
+  -webkit-overflow-scrolling: touch;
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+}
 
 /* Header menu button for mobile */
 .menu-button{display:none;background:transparent;border:none;font-size:20px;padding:6px}
@@ -40,6 +68,18 @@ button{background:var(--green);color:white;border:none;padding:8px 12px;border-r
 button:hover{background:#0a7050;transform:translateY(-1px);transition:all 0.3s ease}
 .actions button:nth-child(2){background:linear-gradient(135deg,#007bff,#0056b3)}
 .actions button:nth-child(2):hover{background:linear-gradient(135deg,#0056b3,#004085)}
+
+/* Disable hover effects on touch devices */
+@media (hover: none) and (pointer: coarse) {
+  button:hover {
+    background: var(--green) !important;
+    transform: none !important;
+  }
+  
+  .actions button:nth-child(2):hover {
+    background: linear-gradient(135deg,#007bff,#0056b3) !important;
+  }
+}
 input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #ddd}
 
 /* Swings panel */
@@ -993,22 +1033,92 @@ input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #dd
 
 /* Mobile scroll optimization */
 @media (max-width: 768px) {
+  /* Global iOS scroll stutter fixes */
+  * {
+    -webkit-overflow-scrolling: touch;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  body {
+    /* Prevent iOS bounce scroll stuttering */
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+  }
+  
+  .container {
+    /* Optimize main container for iOS scrolling */
+    -webkit-transform: translate3d(0,0,0);
+    transform: translate3d(0,0,0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+  
+  .scorecard {
+    /* Prevent table stuttering on iOS */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: auto;
+    contain: layout style;
+  }
+  
   .scoreboard-summary {
     /* Optimize for mobile scrolling performance */
     -webkit-overflow-scrolling: touch;
     will-change: auto;
     contain: layout style;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
   
   .holes-grid {
     /* Prevent layout shifts during scroll */
     contain: layout;
     will-change: auto;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
   
   .hole-summary {
     /* Reduce animations on mobile for smoother scrolling */
     transition: border-color 0.2s ease, background-color 0.2s ease;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  .mobile-list {
+    /* Optimize mobile card list scrolling */
+    -webkit-overflow-scrolling: touch;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: auto;
+  }
+  
+  .mobile-hole {
+    /* Prevent mobile card stuttering */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  
+  /* Disable all hover effects on mobile */
+  button:hover,
+  .done-button:hover,
+  .continue-button:hover,
+  .simple-continue-button:hover,
+  .close-button:hover,
+  .save-game-button:hover,
+  .view-button:hover,
+  .load-button:hover,
+  .delete-button:hover,
+  .back-button:hover,
+  .load-current-button:hover,
+  .return-current-button:hover {
+    background: revert !important;
+    transform: none !important;
+    box-shadow: revert !important;
   }
 }
 
@@ -1746,5 +1856,47 @@ input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #dd
   .swing-tracker-column .button-group-item {
     padding: 5px 2px;
     font-size: 9px;
+  }
+}
+
+/* iOS Safari specific scroll stutter fixes */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 768px) {
+    /* Mobile iOS specific fixes for bottom scroll stutter */
+    html {
+      position: fixed;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+    
+    body {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      -webkit-overflow-scrolling: touch;
+      /* Prevent rubber band effect that causes stutter */
+      overscroll-behavior: none;
+    }
+    
+    .container {
+      height: 100vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      /* Prevent bottom bounce stutter */
+      overscroll-behavior-y: contain;
+      /* Force hardware acceleration */
+      -webkit-transform: translate3d(0,0,0);
+      transform: translate3d(0,0,0);
+      will-change: scroll-position;
+    }
+    
+    /* Ensure content doesn't get cut off */
+    .scorecard {
+      margin-bottom: 50px;
+    }
   }
 }
