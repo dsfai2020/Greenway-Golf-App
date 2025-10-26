@@ -900,6 +900,9 @@ input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #dd
   max-width: 100%;
   overflow: hidden;
   box-sizing: border-box;
+  /* Prevent layout shifts during scroll */
+  position: relative;
+  min-height: 0;
 }
 
 .scoreboard-header {
@@ -986,6 +989,27 @@ input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #dd
 .hole-summary.albatross {
   background: linear-gradient(135deg, #ffd700 0%, #ffed4a 100%);
   border-color: #f39c12;
+}
+
+/* Mobile scroll optimization */
+@media (max-width: 768px) {
+  .scoreboard-summary {
+    /* Optimize for mobile scrolling performance */
+    -webkit-overflow-scrolling: touch;
+    will-change: auto;
+    contain: layout style;
+  }
+  
+  .holes-grid {
+    /* Prevent layout shifts during scroll */
+    contain: layout;
+    will-change: auto;
+  }
+  
+  .hole-summary {
+    /* Reduce animations on mobile for smoother scrolling */
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
 }
 
 .hole-summary.eagle {
@@ -1418,6 +1442,9 @@ input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #dd
     width: 100%;
     max-width: 100%;
     min-width: 0;
+    /* Prevent scroll-related reflows */
+    will-change: auto;
+    contain: layout style;
   }
   
   .scoreboard-header {
@@ -1436,10 +1463,16 @@ input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #dd
     gap: 6px;
     max-width: 100%;
     overflow: hidden;
+    /* Prevent layout thrashing during scroll */
+    will-change: auto;
+    contain: layout;
   }
   
   .hole-summary {
     padding: 8px;
+    /* Disable transitions on mobile to prevent scroll issues */
+    transition: none !important;
+    transform: none !important;
   }
   
   .hole-number {
