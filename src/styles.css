@@ -37,6 +37,9 @@ body{font-family:Inter,Segoe UI,system-ui,Arial;background:linear-gradient(180de
 .scorecard tbody tr.over td{background:rgba(255,100,100,0.06)}
 .actions{display:flex;gap:8px;margin-top:10px}
 button{background:var(--green);color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+button:hover{background:#0a7050;transform:translateY(-1px);transition:all 0.3s ease}
+.actions button:nth-child(2){background:linear-gradient(135deg,#007bff,#0056b3)}
+.actions button:nth-child(2):hover{background:linear-gradient(135deg,#0056b3,#004085)}
 input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #ddd}
 
 /* Swings panel */
@@ -1040,6 +1043,327 @@ input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #dd
   border: 1px solid #dee2e6;
 }
 
+/* Game History Modal Styles */
+.game-history-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.game-history-modal {
+  background: white;
+  border-radius: 20px;
+  max-width: 700px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 2px solid #e9ecef;
+  background: linear-gradient(135deg, var(--green), #0a7050);
+  color: white;
+  border-radius: 20px 20px 0 0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.save-section, .saved-games-section {
+  padding: 20px 25px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.save-section:last-child, .saved-games-section:last-child {
+  border-bottom: none;
+}
+
+.save-section h3, .saved-games-section h3 {
+  margin: 0 0 15px 0;
+  color: var(--green);
+  font-size: 18px;
+}
+
+.save-game-button {
+  background: var(--green);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.save-game-button:hover {
+  background: #0a7050;
+  transform: translateY(-2px);
+}
+
+.save-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.save-form input {
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.save-form input:focus {
+  outline: none;
+  border-color: var(--green);
+}
+
+.save-form-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.save-form-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.save-form-actions button:first-child {
+  background: var(--green);
+  color: white;
+}
+
+.save-form-actions button:first-child:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.save-form-actions button:last-child {
+  background: #6c757d;
+  color: white;
+}
+
+.no-games {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.games-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.game-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.game-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.game-info {
+  flex: 1;
+}
+
+.game-name {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--dark);
+  margin-bottom: 4px;
+}
+
+.game-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.game-stats {
+  font-size: 14px;
+  color: var(--dark);
+  font-weight: 500;
+}
+
+.game-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.view-button, .load-button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.view-button {
+  background: #007bff;
+  color: white;
+}
+
+.view-button:hover {
+  background: #0056b3;
+}
+
+.load-button {
+  background: var(--green);
+  color: white;
+}
+
+.load-button:hover {
+  background: #0a7050;
+}
+
+.delete-button {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.delete-button:hover {
+  background: #c82333;
+}
+
+/* Game View Styles */
+.game-view {
+  padding: 20px 25px;
+}
+
+.game-view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.back-button, .load-current-button, .return-current-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-button {
+  background: #6c757d;
+  color: white;
+}
+
+.back-button:hover {
+  background: #545b62;
+}
+
+.load-current-button {
+  background: var(--green);
+  color: white;
+}
+
+.load-current-button:hover {
+  background: #0a7050;
+}
+
+.return-current-button {
+  background: #007bff;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 25px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.return-current-button:hover {
+  background: #0056b3;
+}
+
+.game-view-header h3 {
+  margin: 0;
+  color: var(--green);
+  font-size: 20px;
+}
+
+.game-view-meta {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+@keyframes slideIn {
+  from {
+    transform: scale(0.8) translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
 /* Mobile responsiveness */
 @media (max-width: 430px) {
   .scoreboard-summary {
@@ -1078,6 +1402,43 @@ input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #dd
   .nine-summary {
     grid-template-columns: 1fr;
     gap: 10px;
+  }
+
+  .game-history-modal {
+    width: 98%;
+    max-height: 95vh;
+  }
+  
+  .modal-header {
+    padding: 15px 20px;
+  }
+  
+  .modal-header h2 {
+    font-size: 20px;
+  }
+  
+  .save-section, .saved-games-section, .game-view {
+    padding: 15px 20px;
+  }
+  
+  .game-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .game-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .game-view-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .save-form-actions {
+    flex-direction: column;
   }
 }
 

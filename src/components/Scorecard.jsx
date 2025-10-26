@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import CelebratoryModal from './CelebratoryModal'
 import ScoreboardSummary from './ScoreboardSummary'
+import GameHistoryModal from './GameHistoryModal'
 
 function makeInitial(h){
   return Array.from({length: h}, () => ({par: 4, swings: [], completed: false}))
@@ -60,6 +61,9 @@ export default function Scorecard({holes=18}){
     par: 0,
     result: null
   })
+
+  // State for game history modal
+  const [showGameHistory, setShowGameHistory] = useState(false)
 
   // keep bulkText in sync when opening the bulk editor
   useEffect(()=>{
@@ -214,6 +218,14 @@ export default function Scorecard({holes=18}){
       par: 0,
       result: null
     })
+  }
+
+  function loadGameData(gameData) {
+    // Load the historic game data into current state
+    setRows(gameData)
+    // Close any open modals
+    setOpen({})
+    setShowGameHistory(false)
   }
 
   function reset(){
@@ -544,6 +556,7 @@ export default function Scorecard({holes=18}){
       
       <div className="actions">
         <button onClick={reset}>Reset</button>
+        <button onClick={() => setShowGameHistory(true)}>📚 Game History</button>
         <button onClick={()=> navigator.clipboard?.writeText(JSON.stringify(rows))}>Copy JSON</button>
       </div>
 
@@ -555,6 +568,13 @@ export default function Scorecard({holes=18}){
         strokes={celebrationModal.strokes}
         par={celebrationModal.par}
         result={celebrationModal.result}
+      />
+
+      <GameHistoryModal
+        isOpen={showGameHistory}
+        onClose={() => setShowGameHistory(false)}
+        currentGameData={rows}
+        onLoadGame={loadGameData}
       />
     </div>
   )
