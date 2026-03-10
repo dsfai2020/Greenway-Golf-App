@@ -1088,6 +1088,125 @@ input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #dd
   border: 1px solid #dee2e6;
 }
 
+/* Hole summary cards — clickable */
+.hole-summary.clickable {
+  cursor: pointer;
+}
+
+.hole-summary.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.hole-summary.clickable:focus {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+/* Hole Detail Modal */
+.hole-detail-modal {
+  background: white;
+  border-radius: 16px;
+  width: min(620px, 95vw);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: celebrateIn 0.25s ease-out;
+}
+
+.hole-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--green, #2d6a4f);
+  color: white;
+  flex-shrink: 0;
+}
+
+.hole-detail-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.hole-detail-number {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.hole-detail-par-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+}
+
+.hole-detail-par-label input {
+  width: 52px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--dark, #1a1a2e);
+  background: rgba(255,255,255,0.9);
+}
+
+.hole-detail-score-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.hole-detail-strokes {
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.hole-detail-strokes-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  opacity: 0.8;
+  letter-spacing: 0.5px;
+}
+
+.hole-detail-close {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  font-size: 1.1rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.hole-detail-close:hover {
+  background: rgba(255,255,255,0.35);
+}
+
+.hole-detail-body {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+
 /* Game History Modal Styles */
 .game-history-backdrop {
   position: fixed;

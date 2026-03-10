@@ -1,6 +1,6 @@
 import React from 'react'
 
-const ScoreboardSummary = ({ rows }) => {
+const ScoreboardSummary = ({ rows, onHoleClick }) => {
   // Calculate totals
   const totalPar = rows.reduce((sum, row) => sum + row.par, 0)
   const totalStrokes = rows.reduce((sum, row) => sum + row.swings.length, 0)
@@ -46,7 +46,11 @@ const ScoreboardSummary = ({ rows }) => {
           return (
             <div 
               key={holeNumber} 
-              className={`hole-summary ${row.completed ? 'completed' : ''} ${hasStrokes ? 'has-strokes' : 'empty'} ${result?.class || ''}`}
+              className={`hole-summary ${row.completed ? 'completed' : ''} ${hasStrokes ? 'has-strokes' : 'empty'} ${result?.class || ''} ${onHoleClick ? 'clickable' : ''}`}
+              onClick={() => onHoleClick && onHoleClick(index)}
+              role={onHoleClick ? 'button' : undefined}
+              tabIndex={onHoleClick ? 0 : undefined}
+              onKeyDown={onHoleClick ? e => (e.key === 'Enter' || e.key === ' ') && onHoleClick(index) : undefined}
             >
               <div className="hole-number">{holeNumber}</div>
               <div className="hole-par">Par {row.par}</div>

@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import CelebratoryModal from './CelebratoryModal'
 import ScoreboardSummary from './ScoreboardSummary'
 import GameHistoryModal from './GameHistoryModal'
+import HoleDetailModal from './HoleDetailModal'
 
 function makeInitial(h){
   return Array.from({length: h}, () => ({par: 4, swings: [], completed: false}))
@@ -35,7 +36,7 @@ export default function Scorecard({holes=18}){
     return makeInitial(holes)
   })
 
-  const [open, setOpen] = useState(() => ({}))
+  const [activeHoleIdx, setActiveHoleIdx] = useState(null)
   const rowRefs = React.useRef({})
   const mobileRefs = React.useRef({})
   const [clubs, setClubs] = useState(()=>{
@@ -46,8 +47,6 @@ export default function Scorecard({holes=18}){
     return defaultClubs
   })
 
-  const [clubsOpen, setClubsOpen] = useState(false)
-  const clubInputRefs = React.useRef({})
   const [bulkOpen, setBulkOpen] = useState(false)
   const [bulkText, setBulkText] = useState('')
   const [showFront9, setShowFront9] = useState(true)
@@ -101,18 +100,12 @@ export default function Scorecard({holes=18}){
       try{
         const hole = (e && e.detail && typeof e.detail.hole === 'number') ? e.detail.hole : null
         if(hole == null) return
-        // open the hole in the UI
-        setOpen(o => ({...o, [hole]: true}))
-        // scroll into view for desktop table row if available, otherwise mobile card
+        setActiveHoleIdx(hole)
+        // scroll table row into view as a visual cue
         setTimeout(()=>{
           const tr = rowRefs.current[hole]
           if(tr && typeof tr.scrollIntoView === 'function'){
             tr.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            return
-          }
-          const mc = mobileRefs.current[hole]
-          if(mc && typeof mc.scrollIntoView === 'function'){
-            mc.scrollIntoView({ behavior: 'smooth', block: 'center' })
           }
         }, 50)
       }catch(err){ }
@@ -150,7 +143,6 @@ export default function Scorecard({holes=18}){
 
   function addSwing(idx){
     setRows(r => r.map((row,i) => i===idx ? {...row, swings: [...(row.swings || []), defaultSwing()]} : row))
-    setOpen(o => ({...o, [idx]: true}))
   }
 
   function addClub(name){
@@ -257,6 +249,8 @@ export default function Scorecard({holes=18}){
 
   return (
     <div className="scorecard">
+      <ScoreboardSummary rows={rows} onHoleClick={setActiveHoleIdx} />
+
       <div className="bulk-par-editor" style={{marginBottom:12}}>
         <button className="small" onClick={()=> setBulkOpen(b=>!b)}>{bulkOpen ? 'Hide' : 'Bulk Edit Pars'}</button>
         {bulkOpen && (
@@ -296,7 +290,6 @@ export default function Scorecard({holes=18}){
             <th>Strokes</th>
             <th>Score</th>
             <th>Outcome</th>
-            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -304,156 +297,18 @@ export default function Scorecard({holes=18}){
             const strokes = (row.swings || []).length
             const result = strokes > 0 ? getResultLabel(strokes, row.par) : null
             return (
-              <React.Fragment key={idx}>
-                <tr ref={el => rowRefs.current[idx] = el} className={strokes>row.par? 'over' : ''}>
-                  <td>{idx+1}</td>
-                  <td>
-                    <input type="number" min="3" max="6" value={row.par} onChange={e=> updatePar(idx, Number(e.target.value))} />
-                  </td>
-                  <td>{strokes}</td>
-                  <td>{strokes - row.par}</td>
-                  <td>{result ? <span className={`result ${result.cls}`}>{result.label}</span> : null}</td>
-                  <td>
-                    <button className="small" onClick={()=> setOpen(o=> ({...o, [idx]: !o[idx]}))}>{open[idx] ? 'Hide' : 'Swings'}</button>
-                    <button className="small mute" onClick={()=> addSwing(idx)}>+ Swing</button>
-                    <button className="small danger" onClick={()=> removeLastSwing(idx)} disabled={strokes===0} title="Remove last swing">−</button>
-                    {open[idx] && strokes > 0 && !row.completed && (
-                      <button 
-                        className="done-button" 
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          completeHole(idx)
-                        }} 
-                        title="Complete hole"
-                      >
-                        Done ⛳
-                      </button>
-                    )}
-                    {row.completed && (
-                      <span className="completed-indicator" title="Hole completed">
-                        ✅ Complete
-                      </span>
-                    )}
-                  </td>
-                </tr>
-
-                {open[idx] && (
-                  <tr className="swings-row">
-                    <td colSpan={6}>
-                      <div className={`collapse ${open[idx] ? 'open' : ''}`} aria-expanded={!!open[idx]}>
-                        <div className="swings">
-                          {row.swings && row.swings.length>0 ? (
-                            row.swings.map((s, sidx) => (
-                              <div className={`swing feel-${s.satisfaction}`} key={sidx}>
-                                <div className="swing-index">#{sidx+1}</div>
-                                <div className="swing-tracker-grid">
-                                  <label className="swing-tracker-column">
-                                    <span className="swing-tracker-header">
-                                      <span className="label-icon">🏌️</span>
-                                      <span className="label-text">Club</span>
-                                    </span>
-                                    <select value={s.club} onChange={e=> updateSwing(idx,sidx,'club',e.target.value)}>
-                                      {clubs.map((cname,ci)=> <option key={ci} value={cname}>{cname}</option>)}
-                                    </select>
-                                  </label>
-                                  <label className="swing-tracker-column">
-                                    <span className="swing-tracker-header">
-                                      <span className="label-icon">🌿</span>
-                                      <span className="label-text">Terrain</span>
-                                    </span>
-                                    <div className="button-group">
-                                      {['Fairway', 'Rough', 'Bunker', 'Green', 'Fringe', 'Hazard'].map(terrain => (
-                                        <button
-                                          key={terrain}
-                                          type="button"
-                                          className={`button-group-item ${s.terrain === terrain ? 'active' : ''}`}
-                                          onClick={() => updateSwing(idx, sidx, 'terrain', terrain)}
-                                        >
-                                          {terrain}
-                                        </button>
-                                      ))}
-                                    </div>
-                                  </label>
-                                  <label className="swing-tracker-column">
-                                    <span className="swing-tracker-header">
-                                      <span className="label-icon">⭐</span>
-                                      <span className="label-text">Feel</span>
-                                    </span>
-                                    <div className="button-group">
-                                      {[1, 2, 3, 4, 5].map(feel => (
-                                        <button
-                                          key={feel}
-                                          type="button"
-                                          className={`button-group-item ${s.satisfaction === feel ? 'active' : ''}`}
-                                          onClick={() => updateSwing(idx, sidx, 'satisfaction', feel)}
-                                        >
-                                          {feel}
-                                        </button>
-                                      ))}
-                                    </div>
-                                  </label>
-                                  <label className="swing-tracker-notes">
-                                    <span className="swing-tracker-header">
-                                      <span className="label-icon">📝</span>
-                                      <span className="label-text">Notes</span>
-                                    </span>
-                                    <input value={s.notes||''} onChange={e=> updateSwing(idx,sidx,'notes',e.target.value)} placeholder="short note" />
-                                  </label>
-                                  <label className="swing-tracker-distance">
-                                    <span className="swing-tracker-header">
-                                      <span className="label-icon">📏</span>
-                                      <span className="label-text">Distance</span>
-                                      <span className="distance-value">{s.distance || 150} yds</span>
-                                    </span>
-                                    <input 
-                                      type="range" 
-                                      min="0" 
-                                      max="400" 
-                                      value={s.distance || 150} 
-                                      onChange={e=> updateSwing(idx,sidx,'distance',Number(e.target.value))}
-                                      className="distance-slider"
-                                    />
-                                  </label>
-                                </div>
-                                <button className="small danger" onClick={()=> removeSwing(idx,sidx)}>Remove</button>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="empty">No swings yet — add one.</div>
-                          )}
-
-                          <div className="swings-actions">
-                            <button onClick={()=> addSwing(idx)}>Add Swing</button>
-                            <button className="small" onClick={()=> setOpen(o=> ({...o, [idx]: false}))}>Done</button>
-                            <button className="small mute" onClick={()=> setClubsOpen(s=>!s)}>{clubsOpen ? 'Hide Clubs' : 'Manage Clubs'}</button>
-                          </div>
-
-                          {clubsOpen && (
-                            <div className="club-manager">
-                              <div className="club-add">
-                                <input placeholder="Custom club name" ref={el => clubInputRefs.current[idx] = el} />
-                                <button type="button" onClick={() => {
-                                  const el = clubInputRefs.current[idx]
-                                  if(el) { addClub(el.value); el.value = '' }
-                                }}>Add</button>
-                              </div>
-                              <div className="club-list">
-                                {clubs.map((cname, ci) => (
-                                  <div className="club-item" key={ci}>
-                                    <div className="club-name">{cname}{defaultClubs.includes(cname) ? ' (default)' : ''}</div>
-                                    <button type="button" className="small danger inline" onClick={()=> removeClub(cname)}>Remove</button>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </React.Fragment>
+              <tr key={idx} ref={el => rowRefs.current[idx] = el} className={strokes>row.par? 'over' : ''}>
+                <td>{idx+1}</td>
+                <td>
+                  <input type="number" min="3" max="6" value={row.par} onChange={e=> updatePar(idx, Number(e.target.value))} />
+                </td>
+                <td>{strokes}</td>
+                <td>{strokes > 0 ? strokes - row.par : 'â€“'}</td>
+                <td>
+                  {result ? <span className={`result ${result.cls}`}>{result.label}</span> : null}
+                  {row.completed && <span className="completed-indicator" title="Hole completed"> âœ…</span>}
+                </td>
+              </tr>
             )
           })}
         </tbody>
@@ -463,7 +318,6 @@ export default function Scorecard({holes=18}){
             <td>{totalPar}</td>
             <td>{totalStrokes}</td>
             <td>{totalStrokes - totalPar}</td>
-            <td></td>
             <td></td>
           </tr>
         </tfoot>
@@ -475,7 +329,7 @@ export default function Scorecard({holes=18}){
           const strokes = (row.swings || []).length
           const result = strokes > 0 ? getResultLabel(strokes, row.par) : null
           return (
-              <div className="mobile-hole" key={`m-${idx}`} ref={el => mobileRefs.current[idx] = el}>
+            <div className="mobile-hole" key={`m-${idx}`} ref={el => mobileRefs.current[idx] = el}>
               <div className="mobile-head">
                 <div className="mobile-left">
                   <div className="hole-num">Hole {idx+1}</div>
@@ -485,132 +339,37 @@ export default function Scorecard({holes=18}){
                 </div>
                 <div className="mobile-right">
                   <div className="hole-strokes">Strokes <div className="strokes-num">{strokes}</div></div>
-                  <div className="hole-outcome">{result ? <span className={`result ${result.cls}`}>{result.label}</span> : null}</div>
-                </div>
-              </div>
-              <div className="mobile-actions">
-                <button className="small" onClick={()=> setOpen(o=> ({...o, [idx]: !o[idx]}))}>{open[idx] ? 'Hide' : 'Swings'}</button>
-                <button className="small mute" onClick={()=> addSwing(idx)}>+ Swing</button>
-                <button className="small danger" onClick={()=> removeLastSwing(idx)} disabled={strokes===0}>−</button>
-                {open[idx] && strokes > 0 && !row.completed && (
-                  <button 
-                    className="done-button" 
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      completeHole(idx)
-                    }} 
-                    title="Complete hole"
-                  >
-                    Done ⛳
-                  </button>
-                )}
-                {row.completed && (
-                  <span className="completed-indicator" title="Hole completed">
-                    ✅ Complete
-                  </span>
-                )}
-              </div>
-
-              {open[idx] && (
-                <div className={`collapse open`}>
-                  <div className="swings">
-                    {(row.swings || []).length>0 ? (
-              (row.swings || []).map((s,sidx) => (
-              <div className={`swing feel-${s.satisfaction}`} key={`ms-${sidx}`}>
-                          <div className="swing-index">#{sidx+1}</div>
-                          <div className="swing-tracker-grid">
-                            <label className="swing-tracker-column">
-                              <span className="swing-tracker-header">
-                                <span className="label-icon">🏌️</span>
-                                <span className="label-text">Club</span>
-                              </span>
-                              <select value={s.club} onChange={e=> updateSwing(idx,sidx,'club',e.target.value)}>
-                                {clubs.map((cname,ci)=> <option key={ci} value={cname}>{cname}</option>)}
-                              </select>
-                            </label>
-                            <label className="swing-tracker-column">
-                              <span className="swing-tracker-header">
-                                <span className="label-icon">🌿</span>
-                                <span className="label-text">Terrain</span>
-                              </span>
-                              <div className="button-group">
-                                {['Fairway', 'Rough', 'Bunker', 'Green', 'Fringe', 'Hazard'].map(terrain => (
-                                  <button
-                                    key={terrain}
-                                    type="button"
-                                    className={`button-group-item ${s.terrain === terrain ? 'active' : ''}`}
-                                    onClick={() => updateSwing(idx, sidx, 'terrain', terrain)}
-                                  >
-                                    {terrain}
-                                  </button>
-                                ))}
-                              </div>
-                            </label>
-                            <label className="swing-tracker-column">
-                              <span className="swing-tracker-header">
-                                <span className="label-icon">⭐</span>
-                                <span className="label-text">Feel</span>
-                              </span>
-                              <div className="button-group">
-                                {[1, 2, 3, 4, 5].map(feel => (
-                                  <button
-                                    key={feel}
-                                    type="button"
-                                    className={`button-group-item ${s.satisfaction === feel ? 'active' : ''}`}
-                                    onClick={() => updateSwing(idx, sidx, 'satisfaction', feel)}
-                                  >
-                                    {feel}
-                                  </button>
-                                ))}
-                              </div>
-                            </label>
-                            <label className="swing-tracker-notes">
-                              <span className="swing-tracker-header">
-                                <span className="label-icon">📝</span>
-                                <span className="label-text">Notes</span>
-                              </span>
-                              <input value={s.notes||''} onChange={e=> updateSwing(idx,sidx,'notes',e.target.value)} placeholder="short note" />
-                            </label>
-                            <label className="swing-tracker-distance">
-                              <span className="swing-tracker-header">
-                                <span className="label-icon">📏</span>
-                                <span className="label-text">Distance</span>
-                                <span className="distance-value">{s.distance || 150} yds</span>
-                              </span>
-                              <input 
-                                type="range" 
-                                min="0" 
-                                max="400" 
-                                value={s.distance || 150} 
-                                onChange={e=> updateSwing(idx,sidx,'distance',Number(e.target.value))}
-                                className="distance-slider"
-                              />
-                            </label>
-                          </div>
-
-                          <button className="small danger" onClick={()=> removeSwing(idx,sidx)}>Remove</button>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="empty">No swings yet — add one.</div>
-                    )}
-                    <div className="swings-actions">
-                      <button onClick={()=> addSwing(idx)}>Add Swing</button>
-                    </div>
+                  <div className="hole-outcome">
+                    {result ? <span className={`result ${result.cls}`}>{result.label}</span> : null}
+                    {row.completed && <span className="completed-indicator" title="Hole completed"> âœ…</span>}
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           )
         })}
       </div>
-      
-      <ScoreboardSummary rows={rows} />
-      
+
+      {/* Hole detail modal â€” opened by clicking a hole in the scoreboard summary */}
+      <HoleDetailModal
+        isOpen={activeHoleIdx !== null}
+        onClose={() => setActiveHoleIdx(null)}
+        holeIdx={activeHoleIdx ?? 0}
+        row={activeHoleIdx !== null ? rows[activeHoleIdx] : null}
+        clubs={clubs}
+        onAddSwing={addSwing}
+        onRemoveSwing={removeSwing}
+        onUpdateSwing={updateSwing}
+        onRemoveLastSwing={removeLastSwing}
+        onUpdatePar={updatePar}
+        onCompleteHole={completeHole}
+        onAddClub={addClub}
+        onRemoveClub={removeClub}
+      />
+
       <div className="actions">
         <button onClick={reset}>Reset</button>
-        <button onClick={() => setShowGameHistory(true)}>📚 Game History</button>
+        <button onClick={() => setShowGameHistory(true)}>ðŸ“š Game History</button>
         <button onClick={()=> navigator.clipboard?.writeText(JSON.stringify(rows))}>Copy JSON</button>
       </div>
 
