@@ -22,6 +22,10 @@ export default function Header(){
       <nav className={`nav ${open ? 'open' : ''}`} onClick={()=> setOpen(false)}>
         <NavLink to="/" end className={({isActive}) => isActive ? 'active' : ''}>Home</NavLink>
         <NavLink to="/main" className={({isActive}) => isActive ? 'active' : ''}>Main</NavLink>
+        <NavLink to="/tournament" className={({isActive}) => isActive ? 'active' : ''}>Tournament</NavLink>
+        <NavLink to="/leaderboard" className={({isActive}) => isActive ? 'active' : ''}>Leaderboard</NavLink>
+        <NavLink to="/range" className={({isActive}) => isActive ? 'active' : ''}>Range Session</NavLink>
+        <NavLink to="/season" className={({isActive}) => isActive ? 'active' : ''}>Season</NavLink>
         <NavLink to="/about" className={({isActive}) => isActive ? 'active' : ''}>About</NavLink>
         {user ? (
           <span style={{marginLeft:12,display:'flex',alignItems:'center',gap:8}}>

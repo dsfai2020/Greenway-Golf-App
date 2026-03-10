@@ -3,42 +3,49 @@ import Scorecard from '../components/Scorecard'
 import { CustomRulesPanel } from '../components/Scorecard'
 import Heatmap from '../components/Heatmap'
 import TreasureMapView from '../components/TreasureMapView'
-import { useAuth } from '../contexts/AuthContext'
+import TraditionalScorecardModal from '../components/TraditionalScorecardModal'
 import { useSession } from '../contexts/SessionContext'
 
 function SessionSetup({ holes }){
-  const { current, users } = useAuth()
-  const { session, createSession, addPlayer, removePlayer, exportSession } = useSession()
-  const [emailToAdd, setEmailToAdd] = useState('')
+  const { session, createSession, addPlayer, removePlayer } = useSession()
+  const [nameInput, setNameInput] = useState('')
 
-  function handleCreate(){ createSession({ name: 'Round', holes }) }
   function handleAdd(){
-    if(!emailToAdd) return
-    const u = users[emailToAdd]
-    if(!u) return alert('No user with that email')
-    addPlayer({ id: emailToAdd, name: u.name, email: emailToAdd })
-    setEmailToAdd('')
+    const trimmed = nameInput.trim()
+    if (!trimmed) return
+    const id = `player_${trimmed.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`
+    addPlayer({ id, name: trimmed })
+    setNameInput('')
+  }
+
+  function handleKeyDown(e){
+    if (e.key === 'Enter') handleAdd()
   }
 
   return (
-    <div className="card" style={{marginBottom:12}}>
-      <h3>Session Setup</h3>
-      <div style={{display:'flex',gap:8,alignItems:'center'}}>
-        <button onClick={handleCreate}>New Session</button>
-        <div style={{flex:1}}>
-          <input placeholder="user email to add" value={emailToAdd} onChange={e=> setEmailToAdd(e.target.value)} />
+    <div className="session-setup-panel">
+      <div className="session-setup-header">
+        <span className="session-setup-title">👥 Players</span>
+      </div>
+      <div className="session-setup-body">
+        <div className="session-add-row">
+          <input
+            className="session-name-input"
+            placeholder="Player name…"
+            value={nameInput}
+            onChange={e => setNameInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+          <button className="session-add-btn" onClick={handleAdd}>+ Add</button>
         </div>
-        <button className="small" onClick={handleAdd}>Add</button>
-      </div>
-      <div style={{marginTop:8}}>
-        <strong>Players:</strong>
-        <div style={{display:'flex',gap:8,marginTop:6,flexWrap:'wrap'}}>
-          {session.players && session.players.length>0 ? session.players.map(p => (
-            <div key={p.id} style={{padding:6,background:'#fff',borderRadius:6,boxShadow:'0 6px 12px rgba(0,0,0,0.06)'}}>
-              {p.name}
+        <div className="session-players-list">
+          {session.players && session.players.length > 0 ? session.players.map(p => (
+            <div key={p.id} className="session-player-chip">
+              <span className="session-player-name">{p.name}</span>
+              <button className="session-player-remove" onClick={() => removePlayer(p.id)} title="Remove">✕</button>
             </div>
-          )) : <div className="empty">No players added</div>}
-      </div>
+          )) : <div className="session-empty">No players yet</div>}
+        </div>
       </div>
     </div>
   )
@@ -48,6 +55,7 @@ export default function Main(){
   const [holes, setHoles] = useState(18)
   const [showHeatmap, setShowHeatmap] = useState(false)
   const [heatView, setHeatView] = useState('all')
+  const [showTradScorecard, setShowTradScorecard] = useState(false)
 
   const pickupKey = 'golf-pickup-rule'
   const [pickupSettings, setPickupSettings] = useState(() => {
@@ -112,6 +120,18 @@ export default function Main(){
           </div>
         )}
       </div>
+
+      <TraditionalScorecardModal
+        isOpen={showTradScorecard}
+        onClose={() => setShowTradScorecard(false)}
+        holes={holes}
+      />
+
+      <footer className="app-footer">
+        <button className="footer-btn" onClick={() => setShowTradScorecard(true)}>
+          📋 Scorecard
+        </button>
+      </footer>
     </section>
   )
 }

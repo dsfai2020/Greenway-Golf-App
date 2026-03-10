@@ -54,6 +54,11 @@ export default function HoleDetailModal({
     onClose()
   }
 
+  function handleDrop() {
+    onAddSwing(holeIdx)
+    setActiveTab(strokes)
+  }
+
   function handleComplete() {
     onCompleteHole(holeIdx)
     onClose()
@@ -195,6 +200,9 @@ export default function HoleDetailModal({
             <div className="pickup-action-row">
               <button className="pickup-button" onClick={handlePickup} title="Pick up — auto-score this hole per your pickup rule">
                 🚫 Pick Up
+              </button>
+              <button className="drop-button" onClick={handleDrop} title="Take a drop — add a penalty stroke">
+                🗿 Take a Drop
               </button>
             </div>
           )}

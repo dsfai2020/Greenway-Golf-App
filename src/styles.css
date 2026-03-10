@@ -21,8 +21,13 @@ body{font-family:Inter,Segoe UI,system-ui,Arial;background:linear-gradient(180de
 .nav{display:flex;gap:8px;align-items:center}
 
 .hero{background:linear-gradient(90deg,rgba(11,132,87,0.06),rgba(7,32,26,0.02));padding:28px;border-radius:12px}
-.cards{display:flex;gap:12px;margin-top:16px}
-.card{background:var(--card);padding:16px;border-radius:10px;flex:1}
+.cards{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap}
+.card{background:var(--card);padding:16px;border-radius:10px;flex:1;min-width:220px}
+
+@media (max-width:600px){
+  .cards{flex-direction:column}
+  .card{flex:unset;width:100%}
+}
 .profile-card{min-width:220px}
 .controls{margin:16px 0}
 .scorecard table{width:100%;border-collapse:collapse;background:white;border-radius:8px;overflow:hidden}
@@ -1167,6 +1172,110 @@ input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #dd
   margin-bottom: 8px;
 }
 
+/* ── Session Setup Panel ────────────────────────────── */
+.session-setup-panel {
+  margin-bottom: 14px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.session-setup-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f5f5f5;
+  border-bottom: 1.5px solid #e0e0e0;
+}
+
+.session-setup-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.session-setup-body {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.session-add-row {
+  display: flex;
+  gap: 8px;
+}
+
+.session-name-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.session-name-input:focus {
+  border-color: var(--green, #2d6a4f);
+}
+
+.session-add-btn {
+  padding: 8px 14px;
+  background: var(--green, #2d6a4f);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.session-add-btn:hover {
+  background: #1f4f39;
+}
+
+.session-players-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.session-player-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 12px;
+  background: #edf7f1;
+  border: 1.5px solid #b7deca;
+  border-radius: 20px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1f4f39;
+}
+
+.session-player-remove {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.session-player-remove:hover {
+  color: #c62828;
+}
+
+.session-empty {
+  font-size: 0.85rem;
+  color: #aaa;
+  font-style: italic;
+}
+
 /* ── Custom Rules Panel ─────────────────────────────── */
 .custom-rules-panel {
   margin-bottom: 14px;
@@ -1289,6 +1398,9 @@ input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #dd
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px solid #f0f0f0;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .pickup-button {
@@ -1304,6 +1416,21 @@ input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #dd
 }
 .pickup-button:hover {
   background: #ffebee;
+  transform: translateY(-1px);
+}
+.drop-button {
+  padding: 8px 16px;
+  border: 2px solid #f59b42;
+  border-radius: 8px;
+  background: #fffaf3;
+  color: #b45309;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.drop-button:hover {
+  background: #fff3e0;
   transform: translateY(-1px);
 }
 
@@ -2277,4 +2404,228 @@ button.active-pickup {
     padding: 5px 2px;
     font-size: 9px;
   }
+}
+
+
+/* -- Sticky App Footer ------------------------------ */
+.app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-top: 2px solid #e0e0e0;
+  padding: 10px 16px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  z-index: 200;
+  box-shadow: 0 -3px 12px rgba(0,0,0,0.10);
+}
+
+.footer-btn {
+  padding: 10px 28px;
+  background: #2e7d32;
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.footer-btn:hover {
+  background: #1b5e20;
+  transform: translateY(-1px);
+}
+
+/* Add bottom padding so content isn't hidden behind footer */
+.main-page {
+  padding-bottom: 72px;
+}
+
+/* -- Traditional Scorecard Modal ------------------- */
+.trad-scorecard-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 95vw;
+  max-width: 720px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.20);
+}
+
+.trad-scorecard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: #2e7d32;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.trad-scorecard-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.trad-close-btn {
+  background: rgba(255,255,255,0.18);
+  border: none;
+  color: #fff;
+}
+.trad-close-btn:hover {
+  background: rgba(255,255,255,0.32);
+}
+
+.trad-scorecard-body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 14px 16px 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.trad-scorecard-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.trad-scorecard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.trad-scorecard-table thead th {
+  background: #f1f8f2;
+  padding: 9px 8px;
+  text-align: center;
+  font-weight: 700;
+  color: #2e7d32;
+  border-bottom: 2px solid #c8e6c9;
+  white-space: nowrap;
+}
+
+.trad-hole-col {
+  width: 52px;
+  text-align: center;
+}
+
+.trad-player-col {
+  min-width: 90px;
+  text-align: center;
+}
+
+.trad-scorecard-table td {
+  padding: 5px 4px;
+  text-align: center;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.trad-hole-num {
+  font-weight: 600;
+  color: #555;
+  text-align: center;
+}
+
+.trad-row-even {
+  background: #fafafa;
+}
+
+.trad-score-cell {
+  text-align: center;
+}
+
+.trad-score-input {
+  width: 54px;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 5px 2px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  background: #fff;
+  -moz-appearance: textfield;
+}
+.trad-score-input::-webkit-inner-spin-button,
+.trad-score-input::-webkit-outer-spin-button {
+  opacity: 0.4;
+}
+.trad-score-input:focus {
+  outline: none;
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 2px rgba(46,125,50,0.15);
+}
+
+.trad-total-row {
+  background: #e8f5e9;
+}
+
+.trad-total-label {
+  font-weight: 700;
+  color: #2e7d32;
+}
+
+.trad-total-val {
+  font-weight: 800;
+  color: #1b5e20;
+  font-size: 1rem;
+}
+
+.trad-clear-btn {
+  margin-top: 14px;
+  padding: 8px 16px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  color: #aaa;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.trad-clear-btn:hover {
+  color: #c62828;
+  border-color: #c62828;
+}
+
+.trad-no-players {
+  padding: 32px 20px;
+  text-align: center;
+  color: #aaa;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* -- Placeholder Pages ----------------------------- */
+.placeholder-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+  min-height: 50vh;
+}
+.placeholder-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+}
+.placeholder-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #2e7d32;
+  margin: 0 0 12px;
+}
+.placeholder-desc {
+  font-size: 1rem;
+  color: #888;
+  max-width: 320px;
+  line-height: 1.6;
 }

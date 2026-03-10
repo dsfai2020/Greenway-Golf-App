@@ -12,10 +12,20 @@ const defaultSwing = () => ({ club: '7I', terrain: 'Fairway', satisfaction: 3, n
 
 const defaultClubs = ['Driver','3W','5W','3I','5I','7I','PW','SW','Putter']
 
-export function CustomRulesPanel({ pickupSettings, onUpdatePickupSettings }) {
-  const [open, setOpen] = useState(false)
+const gameModeLabels = { freeForAll: 'Free for All', scramble: 'Scramble', '2v2Scramble': '2v2 Scramble' }
 
-  const summaryLabel = pickupSettings.mode === 'addToPar'
+export function CustomRulesPanel({ pickupSettings, onUpdatePickupSettings }) {
+  const [open, setOpen] = useState(true)
+  const [gameMode, setGameMode] = useState(() => {
+    try { return localStorage.getItem('golf-game-mode') || 'freeForAll' } catch(e) { return 'freeForAll' }
+  })
+
+  function handleSetMode(m) {
+    setGameMode(m)
+    try { localStorage.setItem('golf-game-mode', m) } catch(e) {}
+  }
+
+  const pickupLabel = pickupSettings.mode === 'addToPar'
     ? `Par + ${pickupSettings.addToPar}`
     : `Score + ${pickupSettings.addToScore}`
 
@@ -27,12 +37,36 @@ export function CustomRulesPanel({ pickupSettings, onUpdatePickupSettings }) {
       >
         <span className="custom-rules-icon">⚙️</span>
         <span className="custom-rules-title">Custom Rules</span>
-        <span className="custom-rules-summary">Pickup: {summaryLabel}</span>
+        <span className="custom-rules-summary">{gameModeLabels[gameMode]} · Pickup: {pickupLabel}</span>
         <span className="custom-rules-chevron">{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
         <div className="custom-rules-body">
+          <div className="custom-rule-row">
+            <div className="custom-rule-label">
+              <span className="rule-icon">🏌️</span>
+              <div>
+                <div className="rule-name">Game Mode</div>
+                <div className="rule-desc">Format of play for this round</div>
+              </div>
+            </div>
+            <div className="custom-rule-controls">
+              <div className="pickup-mode-tabs">
+                {Object.entries(gameModeLabels).map(([key, label]) => (
+                  <button
+                    key={key}
+                    className={`pickup-mode-tab ${gameMode === key ? 'active' : ''}`}
+                    onClick={() => handleSetMode(key)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="custom-rule-divider" />
           <div className="custom-rule-row">
             <div className="custom-rule-label">
               <span className="rule-icon">🚫</span>
