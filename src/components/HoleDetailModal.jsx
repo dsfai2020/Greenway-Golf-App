@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 
 const defaultClubs = ['Driver','3W','5W','3I','5I','7I','PW','SW','Putter']
 
@@ -21,13 +21,33 @@ export default function HoleDetailModal({
   onUpdatePar, onCompleteHole,
   onAddClub, onRemoveClub
 }) {
+  const [activeTab, setActiveTab] = useState(0)
   const [clubsOpen, setClubsOpen] = useState(false)
   const clubInputRef = useRef(null)
+
+  // Reset to first tab whenever a different hole is opened
+  useEffect(() => {
+    setActiveTab(0)
+    setClubsOpen(false)
+  }, [holeIdx])
 
   if (!isOpen || !row) return null
 
   const strokes = row.swings.length
   const result = strokes > 0 ? getResultLabel(strokes, row.par) : null
+  // Keep activeTab in bounds — e.g. after a swing is removed
+  const safeTab = Math.min(activeTab, Math.max(0, strokes - 1))
+  const currentSwing = row.swings[safeTab]
+
+  function handleAddSwing() {
+    onAddSwing(holeIdx)
+    setActiveTab(strokes) // strokes is current length = index of the new swing
+  }
+
+  function handleRemoveSwing() {
+    onRemoveSwing(holeIdx, safeTab)
+    setActiveTab(Math.max(0, safeTab - 1))
+  }
 
   function handleComplete() {
     onCompleteHole(holeIdx)
@@ -59,96 +79,105 @@ export default function HoleDetailModal({
           <button className="hole-detail-close" onClick={onClose} aria-label="Close">✕</button>
         </div>
 
+        {/* Swing tab bar */}
+        <div className="swing-tab-bar">
+          {row.swings.map((_, i) => (
+            <button
+              key={i}
+              className={`swing-tab ${safeTab === i ? 'active' : ''}`}
+              onClick={() => setActiveTab(i)}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button className="swing-tab swing-tab-add" onClick={handleAddSwing} title="Add swing">
+            + Swing
+          </button>
+        </div>
+
         <div className="hole-detail-body">
-          {row.swings.length === 0 ? (
-            <div className="empty">No swings yet — add one below.</div>
+          {strokes === 0 ? (
+            <div className="empty">No swings yet — tap "+ Swing" to start.</div>
           ) : (
-            row.swings.map((s, sidx) => (
-              <div className={`swing feel-${s.satisfaction}`} key={sidx}>
-                <div className="swing-index">#{sidx + 1}</div>
-                <div className="swing-tracker-grid">
-                  <label className="swing-tracker-column">
-                    <span className="swing-tracker-header">
-                      <span className="label-icon">🏌️</span>
-                      <span className="label-text">Club</span>
-                    </span>
-                    <select value={s.club} onChange={e => onUpdateSwing(holeIdx, sidx, 'club', e.target.value)}>
-                      {clubs.map((cname, ci) => <option key={ci} value={cname}>{cname}</option>)}
-                    </select>
-                  </label>
-                  <label className="swing-tracker-column">
-                    <span className="swing-tracker-header">
-                      <span className="label-icon">🌿</span>
-                      <span className="label-text">Terrain</span>
-                    </span>
-                    <div className="button-group">
-                      {['Fairway', 'Rough', 'Bunker', 'Green', 'Fringe', 'Hazard'].map(terrain => (
-                        <button
-                          key={terrain}
-                          type="button"
-                          className={`button-group-item ${s.terrain === terrain ? 'active' : ''}`}
-                          onClick={() => onUpdateSwing(holeIdx, sidx, 'terrain', terrain)}
-                        >
-                          {terrain}
-                        </button>
-                      ))}
-                    </div>
-                  </label>
-                  <label className="swing-tracker-column">
-                    <span className="swing-tracker-header">
-                      <span className="label-icon">⭐</span>
-                      <span className="label-text">Feel</span>
-                    </span>
-                    <div className="button-group">
-                      {[1, 2, 3, 4, 5].map(feel => (
-                        <button
-                          key={feel}
-                          type="button"
-                          className={`button-group-item ${s.satisfaction === feel ? 'active' : ''}`}
-                          onClick={() => onUpdateSwing(holeIdx, sidx, 'satisfaction', feel)}
-                        >
-                          {feel}
-                        </button>
-                      ))}
-                    </div>
-                  </label>
-                  <label className="swing-tracker-notes">
-                    <span className="swing-tracker-header">
-                      <span className="label-icon">📝</span>
-                      <span className="label-text">Notes</span>
-                    </span>
-                    <input
-                      value={s.notes || ''}
-                      onChange={e => onUpdateSwing(holeIdx, sidx, 'notes', e.target.value)}
-                      placeholder="short note"
-                    />
-                  </label>
-                  <label className="swing-tracker-distance">
-                    <span className="swing-tracker-header">
-                      <span className="label-icon">📏</span>
-                      <span className="label-text">Distance</span>
-                      <span className="distance-value">{s.distance || 150} yds</span>
-                    </span>
-                    <input
-                      type="range"
-                      min="0"
-                      max="400"
-                      value={s.distance || 150}
-                      onChange={e => onUpdateSwing(holeIdx, sidx, 'distance', Number(e.target.value))}
-                      className="distance-slider"
-                    />
-                  </label>
-                </div>
-                <button className="small danger" onClick={() => onRemoveSwing(holeIdx, sidx)}>Remove</button>
+            <div className={`swing feel-${currentSwing.satisfaction}`}>
+              <div className="swing-tracker-grid">
+                <label className="swing-tracker-column">
+                  <span className="swing-tracker-header">
+                    <span className="label-icon">🏌️</span>
+                    <span className="label-text">Club</span>
+                  </span>
+                  <select value={currentSwing.club} onChange={e => onUpdateSwing(holeIdx, safeTab, 'club', e.target.value)}>
+                    {clubs.map((cname, ci) => <option key={ci} value={cname}>{cname}</option>)}
+                  </select>
+                </label>
+                <label className="swing-tracker-column">
+                  <span className="swing-tracker-header">
+                    <span className="label-icon">🌿</span>
+                    <span className="label-text">Terrain</span>
+                  </span>
+                  <div className="button-group">
+                    {['Fairway', 'Rough', 'Bunker', 'Green', 'Fringe', 'Hazard'].map(terrain => (
+                      <button
+                        key={terrain}
+                        type="button"
+                        className={`button-group-item ${currentSwing.terrain === terrain ? 'active' : ''}`}
+                        onClick={() => onUpdateSwing(holeIdx, safeTab, 'terrain', terrain)}
+                      >
+                        {terrain}
+                      </button>
+                    ))}
+                  </div>
+                </label>
+                <label className="swing-tracker-column">
+                  <span className="swing-tracker-header">
+                    <span className="label-icon">⭐</span>
+                    <span className="label-text">Feel</span>
+                  </span>
+                  <div className="button-group">
+                    {[1, 2, 3, 4, 5].map(feel => (
+                      <button
+                        key={feel}
+                        type="button"
+                        className={`button-group-item ${currentSwing.satisfaction === feel ? 'active' : ''}`}
+                        onClick={() => onUpdateSwing(holeIdx, safeTab, 'satisfaction', feel)}
+                      >
+                        {feel}
+                      </button>
+                    ))}
+                  </div>
+                </label>
+                <label className="swing-tracker-notes">
+                  <span className="swing-tracker-header">
+                    <span className="label-icon">📝</span>
+                    <span className="label-text">Notes</span>
+                  </span>
+                  <input
+                    value={currentSwing.notes || ''}
+                    onChange={e => onUpdateSwing(holeIdx, safeTab, 'notes', e.target.value)}
+                    placeholder="short note"
+                  />
+                </label>
+                <label className="swing-tracker-distance">
+                  <span className="swing-tracker-header">
+                    <span className="label-icon">📏</span>
+                    <span className="label-text">Distance</span>
+                    <span className="distance-value">{currentSwing.distance || 150} yds</span>
+                  </span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="400"
+                    value={currentSwing.distance || 150}
+                    onChange={e => onUpdateSwing(holeIdx, safeTab, 'distance', Number(e.target.value))}
+                    className="distance-slider"
+                  />
+                </label>
               </div>
-            ))
+              <button className="small danger" onClick={handleRemoveSwing}>Remove Swing</button>
+            </div>
           )}
 
           <div className="swings-actions">
-            <button onClick={() => onAddSwing(holeIdx)}>Add Swing</button>
-            {strokes > 0 && (
-              <button className="small mute" onClick={() => onRemoveLastSwing(holeIdx)}>Remove Last</button>
-            )}
             {strokes > 0 && !row.completed && (
               <button className="done-button" onClick={handleComplete}>Done ⛳</button>
             )}

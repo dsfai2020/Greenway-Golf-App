@@ -1022,9 +1022,15 @@ input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #dd
 }
 
 .hole-par {
-  font-size: 12px;
-  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green, #2d6a4f);
+  background: rgba(45, 106, 79, 0.1);
+  border-radius: 6px;
+  padding: 2px 6px;
+  display: inline-block;
   margin-bottom: 6px;
+  letter-spacing: 0.3px;
 }
 
 .hole-score {
@@ -1205,6 +1211,63 @@ input[type=number]{width:64px;padding:6px;border-radius:6px;border:1px solid #dd
   padding: 16px;
   overflow-y: auto;
   flex: 1;
+}
+
+/* Swing tab bar inside the hole detail modal */
+.swing-tab-bar {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 10px 16px 0;
+  background: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  flex-shrink: 0;
+}
+
+.swing-tab {
+  flex: 0 0 calc(20% - 4px);
+  padding: 6px 4px;
+  border: 2px solid #dee2e6;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #666;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.swing-tab:hover {
+  background: #e9ecef;
+  color: #333;
+}
+
+.swing-tab.active {
+  background: white;
+  color: var(--green, #2d6a4f);
+  border-color: var(--green, #2d6a4f);
+  border-bottom: 2px solid white;
+  margin-bottom: -2px;
+  z-index: 1;
+  position: relative;
+}
+
+.swing-tab-add {
+  background: var(--green, #2d6a4f);
+  color: white;
+  border-color: var(--green, #2d6a4f);
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 6px 14px;
+}
+
+.swing-tab-add:hover {
+  background: #1e4d38;
+  color: white;
 }
 
 /* Game History Modal Styles */
