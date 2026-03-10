@@ -1,6 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Scorecard from '../components/Scorecard'
+import { CustomRulesPanel } from '../components/Scorecard'
 import Heatmap from '../components/Heatmap'
+import TreasureMapView from '../components/TreasureMapView'
 import { useAuth } from '../contexts/AuthContext'
 import { useSession } from '../contexts/SessionContext'
 
@@ -44,12 +46,35 @@ function SessionSetup({ holes }){
 
 export default function Main(){
   const [holes, setHoles] = useState(18)
-  const [showHeatmap, setShowHeatmap] = useState(true)
+  const [showHeatmap, setShowHeatmap] = useState(false)
   const [heatView, setHeatView] = useState('all')
+
+  const pickupKey = 'golf-pickup-rule'
+  const [pickupSettings, setPickupSettings] = useState(() => {
+    try {
+      const raw = localStorage.getItem(pickupKey)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (parsed.mode === 'multiplier') parsed.mode = 'addToPar'
+        return parsed
+      }
+    } catch(e) {}
+    return { mode: 'addToPar', addToPar: 3, addToScore: 3 }
+  })
+
+  useEffect(() => {
+    try { localStorage.setItem(pickupKey, JSON.stringify(pickupSettings)) } catch(e) {}
+  }, [pickupSettings])
+
+  function updatePickupSettings(patch) {
+    setPickupSettings(s => ({ ...s, ...patch }))
+  }
 
   return (
     <section className="main-page">
-      {showHeatmap && <Heatmap holes={holes} view={heatView} />}
+      <SessionSetup holes={holes} />
+      <CustomRulesPanel pickupSettings={pickupSettings} onUpdatePickupSettings={updatePickupSettings} />
+      <TreasureMapView holes={holes} />
       <div className="controls">
         <label style={{marginRight:12}}>
           Holes:
@@ -58,20 +83,35 @@ export default function Main(){
             <option value={18}>18</option>
           </select>
         </label>
-        <label style={{marginRight:12}}>
-          Heatmap view:
-          <select value={heatView} onChange={e => setHeatView(e.target.value)}>
-            <option value={'all'}>All</option>
-            <option value={'front'}>Front 9</option>
-            <option value={'back'}>Back 9</option>
-          </select>
-        </label>
-        <label>
-          <input type="checkbox" checked={showHeatmap} onChange={e => setShowHeatmap(e.target.checked)} /> Show heatmap
-        </label>
       </div>
-      <SessionSetup holes={holes} />
-      <Scorecard holes={holes} />
+      <Scorecard
+        holes={holes}
+        pickupSettings={pickupSettings}
+        onUpdatePickupSettings={updatePickupSettings}
+      />
+
+      {/* Heatmap — hidden by default, toggled at the bottom */}
+      <div className="heatmap-section">
+        <button
+          className={`heatmap-toggle-btn ${showHeatmap ? 'open' : ''}`}
+          onClick={() => setShowHeatmap(o => !o)}
+        >
+          🌡️ Heatmap {showHeatmap ? '▲' : '▼'}
+        </button>
+        {showHeatmap && (
+          <div className="heatmap-body">
+            <label className="heatmap-view-select">
+              View:
+              <select value={heatView} onChange={e => setHeatView(e.target.value)}>
+                <option value={'all'}>All</option>
+                <option value={'front'}>Front 9</option>
+                <option value={'back'}>Back 9</option>
+              </select>
+            </label>
+            <Heatmap holes={holes} view={heatView} />
+          </div>
+        )}
+      </div>
     </section>
   )
 }

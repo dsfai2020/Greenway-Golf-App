@@ -35,9 +35,9 @@ const ScoreboardSummary = ({ rows, onHoleClick }) => {
           </span>
         </div>
       </div>
-      
+
       <div className="holes-grid">
-        {rows.map((row, index) => {
+      {rows.map((row, index) => {
           const holeNumber = index + 1
           const strokes = row.swings.length
           const hasStrokes = strokes > 0
@@ -52,7 +52,7 @@ const ScoreboardSummary = ({ rows, onHoleClick }) => {
               tabIndex={onHoleClick ? 0 : undefined}
               onKeyDown={onHoleClick ? e => (e.key === 'Enter' || e.key === ' ') && onHoleClick(index) : undefined}
             >
-              <div className="hole-number">{holeNumber}</div>
+              <div className="hole-number">Hole {holeNumber}</div>
               <div className="hole-par">Par {row.par}</div>
               <div className="hole-score">
                 {hasStrokes ? (

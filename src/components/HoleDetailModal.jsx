@@ -18,7 +18,7 @@ export default function HoleDetailModal({
   isOpen, onClose,
   holeIdx, row, clubs,
   onAddSwing, onRemoveSwing, onUpdateSwing, onRemoveLastSwing,
-  onUpdatePar, onCompleteHole,
+  onUpdatePar, onCompleteHole, onPickupHole,
   onAddClub, onRemoveClub
 }) {
   const [activeTab, setActiveTab] = useState(0)
@@ -47,6 +47,11 @@ export default function HoleDetailModal({
   function handleRemoveSwing() {
     onRemoveSwing(holeIdx, safeTab)
     setActiveTab(Math.max(0, safeTab - 1))
+  }
+
+  function handlePickup() {
+    onPickupHole && onPickupHole(holeIdx)
+    onClose()
   }
 
   function handleComplete() {
@@ -99,7 +104,7 @@ export default function HoleDetailModal({
           {strokes === 0 ? (
             <div className="empty">No swings yet — tap "+ Swing" to start.</div>
           ) : (
-            <div className={`swing feel-${currentSwing.satisfaction}`}>
+            <div className={`swing feel-${currentSwing.satisfaction}${safeTab === strokes - 1 && !row.completed ? ' is-latest' : ''}`}>
               <div className="swing-tracker-grid">
                 <label className="swing-tracker-column">
                   <span className="swing-tracker-header">
@@ -185,6 +190,14 @@ export default function HoleDetailModal({
               {clubsOpen ? 'Hide Clubs' : 'Manage Clubs'}
             </button>
           </div>
+
+          {!row.completed && (
+            <div className="pickup-action-row">
+              <button className="pickup-button" onClick={handlePickup} title="Pick up — auto-score this hole per your pickup rule">
+                🚫 Pick Up
+              </button>
+            </div>
+          )}
 
           {clubsOpen && (
             <div className="club-manager">

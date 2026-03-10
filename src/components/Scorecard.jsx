@@ -12,7 +12,110 @@ const defaultSwing = () => ({ club: '7I', terrain: 'Fairway', satisfaction: 3, n
 
 const defaultClubs = ['Driver','3W','5W','3I','5I','7I','PW','SW','Putter']
 
-export default function Scorecard({holes=18}){
+export function CustomRulesPanel({ pickupSettings, onUpdatePickupSettings }) {
+  const [open, setOpen] = useState(false)
+
+  const summaryLabel = pickupSettings.mode === 'addToPar'
+    ? `Par + ${pickupSettings.addToPar}`
+    : `Score + ${pickupSettings.addToScore}`
+
+  return (
+    <div className="custom-rules-panel">
+      <button
+        className={`custom-rules-toggle ${open ? 'open' : ''}`}
+        onClick={() => setOpen(o => !o)}
+      >
+        <span className="custom-rules-icon">⚙️</span>
+        <span className="custom-rules-title">Custom Rules</span>
+        <span className="custom-rules-summary">Pickup: {summaryLabel}</span>
+        <span className="custom-rules-chevron">{open ? '▲' : '▼'}</span>
+      </button>
+
+      {open && (
+        <div className="custom-rules-body">
+          <div className="custom-rule-row">
+            <div className="custom-rule-label">
+              <span className="rule-icon">🚫</span>
+              <div>
+                <div className="rule-name">Pickup Rule</div>
+                <div className="rule-desc">How your score is calculated when you pick up</div>
+              </div>
+            </div>
+            <div className="custom-rule-controls">
+              <div className="pickup-mode-tabs">
+                <button
+                  className={`pickup-mode-tab ${pickupSettings.mode === 'addToPar' ? 'active' : ''}`}
+                  onClick={() => onUpdatePickupSettings({ mode: 'addToPar' })}
+                >
+                  + to Par
+                </button>
+                <button
+                  className={`pickup-mode-tab ${pickupSettings.mode === 'addToScore' ? 'active' : ''}`}
+                  onClick={() => onUpdatePickupSettings({ mode: 'addToScore' })}
+                >
+                  + to Score
+                </button>
+              </div>
+              {pickupSettings.mode === 'addToPar' && (
+                <div className="rule-options">
+                  <span className="rule-options-label">Par +</span>
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <button key={n}
+                      className={`option-pill ${pickupSettings.addToPar === n ? 'active' : ''}`}
+                      onClick={() => onUpdatePickupSettings({ addToPar: n })}>
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {pickupSettings.mode === 'addToScore' && (
+                <div className="rule-options">
+                  <span className="rule-options-label">Score +</span>
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <button key={n}
+                      className={`option-pill ${pickupSettings.addToScore === n ? 'active' : ''}`}
+                      onClick={() => onUpdatePickupSettings({ addToScore: n })}>
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="custom-rule-divider" />
+
+          <div className="custom-rule-row custom-rule-placeholder">
+            <div className="custom-rule-label">
+              <span className="rule-icon">💧</span>
+              <div>
+                <div className="rule-name">Drop Rule</div>
+                <div className="rule-desc">Penalty strokes for a drop — coming soon</div>
+              </div>
+            </div>
+            <div className="custom-rule-coming-soon">Coming Soon</div>
+          </div>
+
+          <div className="custom-rule-divider" />
+
+          <div className="custom-rule-row custom-rule-placeholder">
+            <div className="custom-rule-label">
+              <span className="rule-icon">🤝</span>
+              <div>
+                <div className="rule-name">Gimme Rule</div>
+                <div className="rule-desc">Max distance for automatic putts — coming soon</div>
+              </div>
+            </div>
+            <div className="custom-rule-coming-soon">Coming Soon</div>
+          </div>
+
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function Scorecard({ holes=18, pickupSettings, onUpdatePickupSettings }){
   const key = `golf-score-${holes}`
   const clubsKey = 'golf-clubs'
   const [rows, setRows] = useState(() => {
@@ -52,6 +155,8 @@ export default function Scorecard({holes=18}){
   const [showFront9, setShowFront9] = useState(true)
   const [showBack9, setShowBack9] = useState(true)
 
+  // pickupSettings + onUpdatePickupSettings are passed in from Main.jsx
+
   // State for celebration modal
   const [celebrationModal, setCelebrationModal] = useState({
     isOpen: false,
@@ -75,6 +180,10 @@ export default function Scorecard({holes=18}){
   useEffect(()=>{
     try{ localStorage.setItem(clubsKey, JSON.stringify(clubs)) }catch(e){}
   },[clubs])
+
+  useEffect(()=>{
+    try{ localStorage.setItem(pickupKey, JSON.stringify(pickupSettings)) }catch(e){}
+  },[pickupSettings])
 
   // adjust rows length when holes changes but preserve existing data where possible
   useEffect(()=>{
@@ -224,6 +333,34 @@ export default function Scorecard({holes=18}){
     setRows(makeInitial(holes))
   }
 
+  function pickupHole(idx) {
+    const row = rows[idx]
+    if (!row) return
+    const currentStrokes = row.swings.length
+    let finalStrokes
+    if (pickupSettings.mode === 'addToPar') {
+      finalStrokes = row.par + pickupSettings.addToPar
+    } else {
+      // addToScore: add directly to current swing count
+      finalStrokes = currentStrokes + pickupSettings.addToScore
+    }
+    // Pad swings to finalStrokes count, marking extras as pickup swings
+    const existingSwings = row.swings || []
+    const padded = [...existingSwings]
+    while (padded.length < finalStrokes) {
+      padded.push({ ...defaultSwing(), notes: 'Pickup', isPickup: true })
+    }
+    setRows(r => r.map((holeRow, i) =>
+      i === idx ? { ...holeRow, swings: padded, completed: true, pickedUp: true } : holeRow
+    ))
+    const result = getResultLabel(finalStrokes, row.par)
+    setCelebrationModal({ isOpen: true, holeNumber: idx + 1, strokes: finalStrokes, par: row.par, result })
+  }
+
+  function updatePickupSettings(patch) {
+    onUpdatePickupSettings && onUpdatePickupSettings(patch)
+  }
+
   function getResultLabel(strokes, par){
     const diff = strokes - par
     if(diff <= -3) return {label: 'Albatross', cls: 'albatross'}
@@ -249,7 +386,10 @@ export default function Scorecard({holes=18}){
 
   return (
     <div className="scorecard">
-      <ScoreboardSummary rows={rows} onHoleClick={setActiveHoleIdx} />
+      <ScoreboardSummary
+        rows={rows}
+        onHoleClick={setActiveHoleIdx}
+      />
 
       <div className="bulk-par-editor" style={{marginBottom:12}}>
         <button className="small" onClick={()=> setBulkOpen(b=>!b)}>{bulkOpen ? 'Hide' : 'Bulk Edit Pars'}</button>
@@ -306,7 +446,8 @@ export default function Scorecard({holes=18}){
                 <td>{strokes > 0 ? strokes - row.par : 'â€“'}</td>
                 <td>
                   {result ? <span className={`result ${result.cls}`}>{result.label}</span> : null}
-                  {row.completed && <span className="completed-indicator" title="Hole completed"> âœ…</span>}
+                  {row.pickedUp && <span className="pickup-indicator" title="Picked up">🚫</span>}
+                  {row.completed && !row.pickedUp && <span className="completed-indicator" title="Hole completed"> ✅</span>}
                 </td>
               </tr>
             )
@@ -341,7 +482,8 @@ export default function Scorecard({holes=18}){
                   <div className="hole-strokes">Strokes <div className="strokes-num">{strokes}</div></div>
                   <div className="hole-outcome">
                     {result ? <span className={`result ${result.cls}`}>{result.label}</span> : null}
-                    {row.completed && <span className="completed-indicator" title="Hole completed"> âœ…</span>}
+                    {row.pickedUp && <span className="pickup-indicator" title="Picked up">🚫</span>}
+                    {row.completed && !row.pickedUp && <span className="completed-indicator" title="Hole completed"> ✅</span>}
                   </div>
                 </div>
               </div>
@@ -363,6 +505,7 @@ export default function Scorecard({holes=18}){
         onRemoveLastSwing={removeLastSwing}
         onUpdatePar={updatePar}
         onCompleteHole={completeHole}
+        onPickupHole={pickupHole}
         onAddClub={addClub}
         onRemoveClub={removeClub}
       />
